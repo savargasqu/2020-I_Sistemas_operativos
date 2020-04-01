@@ -1,2 +1,4 @@
-# 2020-I_Sistemas_operativos
-Código para el curso de sistemas operativos 2020-I UNal
+# 2020-I Sistemas Operativos
+
+Repositorio para el curso de Sistemas Operativos 2020-I UNal.
+
