@@ -3,14 +3,14 @@
 #include <stdio.h>
 
 #define WAIT 100
-#define PRES 10e9 // Iteraciones de la serie
+#define PRES 10e8 // Iteraciones de la serie
 
 int main() {
-// id de proceso
+
 
   FILE *fp;                     // referencia al archivo
   char fname[] = "pi_file.dat"; // Archivo que guarda resultado del proceso hijo
-  pid_t cpid;
+  pid_t cpid;                   // id de proceso
   unsigned long i;
   double pos_series; // Suma de la parte positiva de la serie
   double neg_series; // Suma de la parte negativa de la serie
