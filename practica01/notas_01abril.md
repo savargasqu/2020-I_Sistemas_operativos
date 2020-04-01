@@ -2,27 +2,25 @@
 
 ## Requerimientos:
 
-[ ] Estructura de animal
+- [ ] Estructura de animal
 
-[ ] Interfaz
+- [ ] Interfaz
     - Confirmación de comando
 
-[ ] Escritura de archivos binarios
+- [ ] Escritura de archivos binarios
  
-[ ] Implementación de tabla Hash
+- [ ] Implementación de tabla Hash
  
-[ ] Generar estructuras aleatorias
+- [ ] Generar estructuras aleatorias
  
-[ ] Actualizar archivo de persistencia
+- [ ] Actualizar archivo de persistencia
 
 ## Dudas
 
-¿Debemos implementar nuestra propia tabla hash?
+- ¿Debemos implementar nuestra propia tabla hash?
 
-¿Como se va a calcular la velocidad del programa?
-¿Con `<time.h>`?
+- ¿Como se va a calcular la velocidad del programa? ¿Con `<time.h>`?
 
-¿Como será la entrega de los archivos de la práctica?
-¿Por correo o por Github?
+- ¿Como será la entrega de los archivos de la práctica? ¿Por correo o por Github?
 
 
