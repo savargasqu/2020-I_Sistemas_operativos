@@ -1,56 +1,185 @@
+/* Hash Table Implementation
+ *
+ * Juan Pablo Gutiérrez
+ * Tatiana Roberto
+ * Sergio Alejandro Vargas
+ *
+ * Universidad Nacional de Colombia
+ * 2020-04-13
+ *
+ * References:
+ * K&R 6.5. Self-referential structures
+ * CLRS 11. Hash tables
+ */
 #include <stdio.h>
 #include <stdlib.h>
 
-/* K&R 6.5: Self-referential structures. MUY útil
- * TODO:
- * Comparison functions, for numbers and strings (necessary for search)
- * Hash table of n-buckets with a generic hash function
- * Specific hash functions for numbers and strings
- */
+#define HASHSIZE 11 // Should be a prime number!
 
 // Structures with their correspoding pointer type
 struct node;
 typedef struct node *Node;
 struct list;
 typedef struct list *List;
-// struct table;
-// typedef struct table *HashTable;
+struct table;
+typedef struct table *Table;
 
-// List methods
-List create_list();
-void insert_to_list(List, int);
-void delete_in_list(List, int);
-Node search_list(List, int);
-void print_list(List);
+/* create_table: Allocate memory for a hash table. Initialize buckets as NULL*/
+Table create_table();
+
+/* poly_hash: Calculates h(k), the polynomial hash of string k */
+long poly_hash(char *);
+
+/* insert_to_table: Creates a node (k, v)and places it in the h(k)-th bucket */
+void insert_to_table(Table, char *, int);
+
+/* delete_in_table: Searches for a node. If it finds a match, it removes its
+ * reference from the table and frees its memory */
+void delete_in_table(Table, char *, int);
+
+/* search_in_table: For a node (k, v), it goes to bucket h(k) an looks for v
+ * If it finds it returns a pointer to its node, otherwise it returns NULL */
+Node search_in_table(Table, char *, int);
+void print_table(Table);
 
 struct node {
-  int val;   // value stored in the node
+  char *key; // Key for hash function
+  int value; // value stored in the node
   Node prev; // Pointer to the previous node. First node points to NULL
   Node next; // Pointer to the following node. Last node points to NULL
 };
 
+struct table {
+  Node buckets[HASHSIZE];
+};
+
+
+Table create_table() {
+  Table ht = (Table)malloc(sizeof(struct table));
+  for (unsigned long i = 0; i < HASHSIZE; i++) {
+    ht->buckets[i] = NULL;
+  }
+  return ht;
+}
+
+long poly_hash(char *k) {
+  // Polynomial hash function h(S) = \sum_{i = 0}^{|S| - 1} S[i]*31^i \mod p
+  // const unsigned int p = BIGPRIME;
+  const unsigned int x = 31;
+  unsigned long hash_value = 0;
+  for (int i = 0; k[i] != '\0'; i++) {
+    hash_value = hash_value * x + (k[i] - 'a' + 1); // % p
+  }
+  return hash_value % HASHSIZE; // Hash can't exceed the size of the table
+}
+
+void insert_to_table(Table table, char *key, int val) {
+  // Create a node
+  Node node = (Node)malloc(sizeof(struct node));
+  node->key = key;
+  node->value = val;
+  // Compute hash
+  long hash = poly_hash(key);
+  Node head = table->buckets[hash];
+  // Insert node at the beginning of the list
+  if (head != NULL) { // The list is not empty
+    head->prev = node;
+  }
+  node->prev = NULL;
+  node->next = head;
+  table->buckets[hash] = node; // Rebase head
+}
+
+Node search_in_table(Table table, char *key, int val) {
+  long hash = poly_hash(key);
+  for (Node temp = table->buckets[hash]; temp != NULL; temp = temp->next) {
+    if (temp->value == val) {
+      return temp; // Found
+    }
+  }
+  return NULL; // Not found
+}
+
+void delete_in_list(Table table, char *key, int val) {
+  Node node = search_in_table(table, key, val);
+  if (node != NULL) {         // Check if node was found
+    if (node->prev != NULL) { // Check if node has a predecessor
+      node->prev->next = node->next;
+    } else {
+      //list->head = node->next;
+      table->buckets[poly_hash(key)] = node->next;
+    }
+    if (node->next != NULL) { // Check if node has a successor
+      node->next->prev = node->prev;
+    }
+    free(node); // Free takes a pointer, not a structure
+  }
+}
+
+// For debugging
+void print_list(Node head) {
+  printf("[");
+  for (Node temp = head; temp != NULL; temp = temp->next) {
+    printf("%d ", temp->value);
+  }
+  printf("]\n");
+}
+
+void test_search(Table table, int len_values, char *key, int value) {
+  Node test = search_in_table(table, key, value);
+  if (test != NULL) {
+    printf("Found %d\n", test->value);
+  } else {
+    printf("Didn't found %d\n", value);
+  }
+}
+
+int main(int argc, char *argv[]) {
+  unsigned long h;
+  char *test_keys[8];
+  test_keys[0] = "rojo";
+  test_keys[1] = "naranja";
+
+  Table ht = create_table();
+
+  // Bunch of tests
+  insert_to_table(ht, test_keys[0], 1);
+  insert_to_table(ht, test_keys[0], 4);
+  insert_to_table(ht, test_keys[1], 5);
+  insert_to_table(ht, test_keys[1], 2);
+
+  h = poly_hash(test_keys[0]);
+  print_list(ht->buckets[h]);
+  h = poly_hash(test_keys[1]);
+  print_list(ht->buckets[h]);
+
+  test_search(ht, 6, test_keys[0], 1);
+  test_search(ht, 6, test_keys[0], 4);
+  test_search(ht, 6, test_keys[1], 5);
+
+  delete_in_list(ht, test_keys[1], 5);
+  delete_in_list(ht, test_keys[0], 4);
+  delete_in_list(ht, test_keys[0], 2);
+
+  h = poly_hash(test_keys[0]);
+  print_list(ht->buckets[h]);
+  h = poly_hash(test_keys[1]);
+  print_list(ht->buckets[h]);
+
+  test_search(ht, 6, test_keys[0], 1);
+  test_search(ht, 6, test_keys[0], 4);
+  test_search(ht, 6, test_keys[1], 5);
+  return 0;
+}
+
+/*
 struct list {
   unsigned int len; // Length of the list (not necessary, but useful)
   Node head;        // Pointer to first node on the list
 };
 
-/*
-struct table {
-  int size; // Cardinality of the hash table
-  List *buckets;
-};
-HashTable create_hash_table(int size) {
-  HashTable ht = (HashTable) malloc(sizeof(struct table)); // Malloc retorna un
-apuntador ht->size = size; List buckets[size]; for (int i = 0; i < size; i++) {
-    buckets[i] = create_list();
-  }
-  ht->buckets = buckets;
-  return ht;
-}
-*/
-
 List create_list() {
-  List list = (List)malloc(sizeof(struct list)); // Malloc retorna un apuntador
+  List list = (List)malloc(sizeof(struct list)); // malloc returns a pointer
   struct list newList;
   list->len = 0;
   list->head = NULL;
@@ -60,7 +189,7 @@ List create_list() {
 void insert_to_list(List list, int val) {
   // if((node = search_list(list, val)) == null); //For hash table
   Node node = (Node)malloc(sizeof(struct node));
-  node->val = val;
+  node->value = val;
   if (list->head != NULL) { // The list is not empty
     list->head->prev = node;
   }
@@ -70,9 +199,9 @@ void insert_to_list(List list, int val) {
   list->len += 1;
 }
 
-Node search_list(List list, int val) {
+Node search_in_list(List list, int val) {
   for (Node temp = list->head; temp != NULL; temp = temp->next) {
-    if (temp->val == val) {
+    if (temp->value == val) {
       return temp; // Found
     }
   }
@@ -80,7 +209,7 @@ Node search_list(List list, int val) {
 }
 
 void delete_in_list(List list, int val) {
-  Node node = search_list(list, val);
+  Node node = search_in_list(list, val);
   if (node != NULL) {         // Check if node was found
     if (node->prev != NULL) { // Check if node has a predecessor
       node->prev->next = node->next;
@@ -94,57 +223,4 @@ void delete_in_list(List list, int val) {
     free(node); // Free takes a pointer, not a structure
   }
 }
-
-void print_list(List list) { // For debugging
-  printf("|L| = %u; L = [", list->len);
-  if (list->head != NULL) { // Check if list is empty
-    Node temp = list->head;
-    printf("%d", temp->val);
-    while (temp != NULL) {
-      printf(", %d", temp->val);
-      temp = temp->next;
-    }
-  }
-  printf("]\n");
-}
-
-void test_search(List list, int len_values, int *values) { // For debugging
-  for (int i = 0; i < len_values; i++) {
-    Node test = search_list(list, values[i]);
-    if (test != NULL) {
-      printf("Found %d\n", test->val);
-    } else {
-      printf("Didn't found %d\n", values[i]);
-    }
-  }
-}
-
-int main(int argc, char *argv[]) {
-  List list;
-  const int n = 5;
-  int vals[n] = {1, 2, 100, 5, 10};
-  int val;
-
-  list = create_list();
-  print_list(list);
-
-  insert_to_list(list, 1);
-  insert_to_list(list, 10);
-  insert_to_list(list, 100);
-  print_list(list);
-
-  test_search(list, n, vals);
-
-  delete_in_list(list, 10);
-  delete_in_list(list, 100);
-  print_list(list);
-
-  test_search(list, n, vals);
-
-  delete_in_list(list, 1);
-  print_list(list);
-  test_search(list, n, vals);
-
-  return 0;
-}
-
+*/
