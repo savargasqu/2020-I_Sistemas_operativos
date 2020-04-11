@@ -11,48 +11,7 @@
  * K&R 6.5. Self-referential structures
  * CLRS 11. Hash tables
  */
-#include <stdio.h>
-#include <stdlib.h>
-
-#define HASHSIZE 11 // Should be a prime number!
-
-// Structures with their correspoding pointer type
-struct node;
-typedef struct node *Node;
-struct list;
-typedef struct list *List;
-struct table;
-typedef struct table *Table;
-
-/* create_table: Allocate memory for a hash table. Initialize buckets as NULL*/
-Table create_table();
-
-/* poly_hash: Calculates h(k), the polynomial hash of string k */
-long poly_hash(char *);
-
-/* insert_to_table: Creates a node (k, v)and places it in the h(k)-th bucket */
-void insert_to_table(Table, char *, int);
-
-/* delete_in_table: Searches for a node. If it finds a match, it removes its
- * reference from the table and frees its memory */
-void delete_in_table(Table, char *, int);
-
-/* search_in_table: For a node (k, v), it goes to bucket h(k) an looks for v
- * If it finds it returns a pointer to its node, otherwise it returns NULL */
-Node search_in_table(Table, char *, int);
-void print_table(Table);
-
-struct node {
-  char *key; // Key for hash function
-  int value; // value stored in the node
-  Node prev; // Pointer to the previous node. First node points to NULL
-  Node next; // Pointer to the following node. Last node points to NULL
-};
-
-struct table {
-  Node buckets[HASHSIZE];
-};
-
+#include "hash_table.h"
 
 Table create_table() {
   Table ht = (Table)malloc(sizeof(struct table));
@@ -100,7 +59,7 @@ Node search_in_table(Table table, char *key, int val) {
   return NULL; // Not found
 }
 
-void delete_in_list(Table table, char *key, int val) {
+void delete_in_table(Table table, char *key, int val) {
   Node node = search_in_table(table, key, val);
   if (node != NULL) {         // Check if node was found
     if (node->prev != NULL) { // Check if node has a predecessor
@@ -114,61 +73,5 @@ void delete_in_list(Table table, char *key, int val) {
     }
     free(node); // Free takes a pointer, not a structure
   }
-}
-
-// For debugging
-void print_list(Node head) {
-  printf("[");
-  for (Node temp = head; temp != NULL; temp = temp->next) {
-    printf("%d ", temp->value);
-  }
-  printf("]\n");
-}
-
-void test_search(Table table, int len_values, char *key, int value) {
-  Node test = search_in_table(table, key, value);
-  if (test != NULL) {
-    printf("Found %d\n", test->value);
-  } else {
-    printf("Didn't found %d\n", value);
-  }
-}
-
-int main(int argc, char *argv[]) {
-  unsigned long h;
-  char *test_keys[8];
-  test_keys[0] = "rojo";
-  test_keys[1] = "naranja";
-
-  Table ht = create_table();
-
-  // Bunch of tests
-  insert_to_table(ht, test_keys[0], 1);
-  insert_to_table(ht, test_keys[0], 4);
-  insert_to_table(ht, test_keys[1], 5);
-  insert_to_table(ht, test_keys[1], 2);
-
-  h = poly_hash(test_keys[0]);
-  print_list(ht->buckets[h]);
-  h = poly_hash(test_keys[1]);
-  print_list(ht->buckets[h]);
-
-  test_search(ht, 6, test_keys[0], 1);
-  test_search(ht, 6, test_keys[0], 4);
-  test_search(ht, 6, test_keys[1], 5);
-
-  delete_in_list(ht, test_keys[1], 5);
-  delete_in_list(ht, test_keys[0], 4);
-  delete_in_list(ht, test_keys[0], 2);
-
-  h = poly_hash(test_keys[0]);
-  print_list(ht->buckets[h]);
-  h = poly_hash(test_keys[1]);
-  print_list(ht->buckets[h]);
-
-  test_search(ht, 6, test_keys[0], 1);
-  test_search(ht, 6, test_keys[0], 4);
-  test_search(ht, 6, test_keys[1], 5);
-  return 0;
 }
 
