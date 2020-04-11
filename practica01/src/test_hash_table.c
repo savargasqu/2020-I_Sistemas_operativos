@@ -1,4 +1,4 @@
-#include "hash_table.h"
+#include "../hash_table.h"
 
 // For debugging
 void print_list(Node head) {

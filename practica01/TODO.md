@@ -18,3 +18,6 @@
 
 - [ ] Actualizar archivo de persistencia
 
+ # References:
+ * K&R 6.5. Self-referential structures
+ * CLRS 11. Hash tables

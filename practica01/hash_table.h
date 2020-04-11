@@ -6,10 +6,6 @@
  *
  * Universidad Nacional de Colombia
  * 2020-04-13
- *
- * References:
- * K&R 6.5. Self-referential structures
- * CLRS 11. Hash tables
  */
 #include <stdio.h>
 #include <stdlib.h>

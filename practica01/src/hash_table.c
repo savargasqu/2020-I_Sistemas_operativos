@@ -6,12 +6,8 @@
  *
  * Universidad Nacional de Colombia
  * 2020-04-13
- *
- * References:
- * K&R 6.5. Self-referential structures
- * CLRS 11. Hash tables
  */
-#include "hash_table.h"
+#include "../hash_table.h"
 
 Table create_table() {
   Table ht = (Table)malloc(sizeof(struct table));
