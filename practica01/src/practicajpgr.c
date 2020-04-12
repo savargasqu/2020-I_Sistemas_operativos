@@ -103,7 +103,7 @@ int main()
 	int int_choice = 0;
 
    do{
-      system("cls");
+      system("clear");
       printf("Main Menu: \n\n");
       printf("1. Ingresar Registro\n");
       printf("2. Ver Registro\n");
@@ -119,22 +119,22 @@ int main()
          case 1:
             save((void *)data);
             printf("Presione cualquier tecla para continuar.");
-            getch();
+            getchar();
             break;
          case 2:
             load((void *)data);
             printf("Presione cualquier tecla para continuar.");
-            getch();
+            getchar();
             // Not yet used.
             break;
          case 3:
             printf("sin implementar.");
-            getch();
+            getchar();
             // Not yet used.
             break;
          case 4:
             printf("sin implementar.");
-            getch();
+            getchar();
             // Not yet used.
             break;
          case 5:
@@ -142,7 +142,7 @@ int main()
             break;
          default: 
             printf("Ingrese una opcion correcta.");
-            getch();
+            getchar();
             break;
       }
    }while(!exit);
