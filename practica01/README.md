@@ -7,7 +7,8 @@
 Juan Pablo Gutiérrez
 `jgutierrezre@unal.edu.co`
 
-Tatiana Roberto
+Tatiana Roberto Torres
+`etrobertot@unal.edu.co`
 
 Sergio Alejandro Vargas
 `savargasqu@unal.edu.co`
