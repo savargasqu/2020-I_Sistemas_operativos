@@ -4,6 +4,9 @@ CFLAGS=-I.
 SRCDIR=src
 DEPS=hash_table.h
 
-test_hash: $(SRCDIR)/*.c
+p1-dogProgram: $(SRCDIR)/*.c
 	$(CC) -o $@ $^ $(CFLAGS)
+
+#test_hash: $(SRCDIR)/*.c
+#	$(CC) -o $@ $^ $(CFLAGS)
 
