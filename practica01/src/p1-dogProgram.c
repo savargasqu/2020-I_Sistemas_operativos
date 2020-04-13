@@ -3,22 +3,11 @@
 static Table ht;
 
 int main() {
-  load_table();
+  ht = serialize(ht, 'r');
   display_menu();
-  //save_table();
+  serialize(ht, 'w');
   return 0;
 }
-
-void load_table() {
-  ht = create_table();
-  /* if file exits
-   * deserialize file
-   * else
-   * create new file
-   */
-}
-
-void save_table() {}
 
 int display_menu() {
   struct dogType *dog_record; // Pointer to structure
@@ -73,10 +62,6 @@ void create_record() {
 }
 
 void request_data(struct dogType *dog_record) {
-  /* TODO:
-   * Add error handling
-   * Make records lower case
-   */
   fflush(stdin);
   printf("Por favor ingrese los datos solicitados.\n");
   printf("Nombre: ");
@@ -117,29 +102,29 @@ void view_record() {
 }
 
 void display_dog_data(struct dogType *dog_ptr) {
-  /*
-  FILE *read_file;
-  int r;
-  read_file = fopen("dataDogs.dat", "rb");
-  if (read_file == NULL) {
-    perror(READ_ERROR);
-  }
-  fread(&dog_readBuffer, sizeof(struct dogType), 1, read_file);
-  r = fclose(read_file);
-  if (r < 0) {
-    perror(CLOSE_ERROR);
-  }
-  */
-  printf("Nombre: %s\n", dog_ptr->name);
-  printf("  Tipo: %s\n", dog_ptr->species);
-  printf("  Edad: %i\n", dog_ptr->age);
-  printf("  Raza: %s\n", dog_ptr->breed);
-  printf("Altura: %i\n", dog_ptr->height);
-  printf("  Peso: %.3f\n", dog_ptr->weight);
-  printf("  Sexo: %c\n", dog_ptr->sex);
+  printf("Nombre: %s.\n", dog_ptr->name);
+  printf("  Tipo: %s.\n", dog_ptr->species);
+  printf("  Edad: %i.\n", dog_ptr->age);
+  printf("  Raza: %s.\n", dog_ptr->breed);
+  printf("Altura: %i.\n", dog_ptr->height);
+  printf("  Peso: %.3f.\n", dog_ptr->weight);
+  printf("  Sexo: %c.\n", dog_ptr->sex);
 }
 
-void edit_clinical_history(int ID) {}
+void edit_clinical_history(unsigned long ID) {
+  char *file_name;
+  FILE *text_file;
+  sprintf(file_name, "%lu.txt", ID); // File name is dog's ID
+  text_file = fopen(file_name, "w"); // Write file in binary format
+  if (text_file == NULL) {                 // If pointer is NULL, fopen failed
+    perror(OPEN_ERROR);
+    exit(-1);
+  } else {
+    char command[64];
+    sprintf(command, "$VISUAL ./histories/%s", file_name);
+    system(command);
+  }
+}
 
 void delete_record() {
   unsigned long id = request_id();
@@ -156,6 +141,7 @@ void search_record() {
   char search_name[32];
   printf("Escriba el nombre a buscar: ");
   scanf("%s", search_name);
+  search_keys_in_table(ht, search_name);
   unsigned int count = search_keys_in_table(ht, search_name);
   printf("Se encontraron %u registros\n", count);
 }
@@ -193,7 +179,7 @@ struct dogType *write_record_to_file(struct dogType *dog_record) {
   result = fwrite(dog_record, sizeof(struct dogType), 1, write_file);
   // Returns the number of items written. If it's 0, it didn't write anything
   if (result <= 0) {
-    perror(WRITE_ERROR);
+    perror(SERIALIZE_ERROR);
     exit(-1);
   }
   result = fclose(write_file);

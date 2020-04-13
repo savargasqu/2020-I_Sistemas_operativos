@@ -1,6 +1,6 @@
 # Práctica 1
 
-**Sistemas Operativos**
+**Sistemas Operativos 2020-I**
 
 **Universidad Nacional de Colombia**
 
@@ -8,13 +8,11 @@ Juan Pablo Gutiérrez
 
 Tatiana Roberto
 
-Sergio Alejandro Vargas Quintero
+Sergio Alejandro Vargas
 `savargasqu@unal.edu.co`
 
-Abril de 2020
 
-
-Implementación de la practica 1:
+Implementación de:
 [os-20201/practica1.pdf](https://github.com/capedrazab/os-20201/blob/master/practica1.pdf)
 
 

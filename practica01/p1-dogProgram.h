@@ -3,14 +3,16 @@
 
 // Define error macros in spanish
 #define OPEN_ERROR "ERROR: Archivo no se pudo abrir con exito"
-#define WRITE_ERROR "ERROR: Archivo no se pudo escribir con exito"
-#define READ_ERROR "ERROR: Archivo no se pudo leer con exito"
+#define SERIALIZE_ERROR "ERROR: Archivo no se pudo leer/escribir con exito"
 #define CLOSE_ERROR "ERROR: Archivo no se pudo cerrar con exito"
 #define MEMORY_ERROR "ERROR: Falla en la alocación de memoria"
 #define INPUT_WARNING "Ingrese un opción correcta\n"
 
+// Name of binary file
+#define DATA_FILE "dataDogs.dat"
+
 // Hash table cardinality. Should be a prime number!
-#define HASHSIZE 11
+#define HASHSIZE 10111
 
 // Structures with their correspoding pointer type
 struct node;
@@ -49,15 +51,6 @@ struct table {
 /* main: Loads table and calls display_menu */
 int main();
 
-/*** SERIALIZATION ***/
-
-/* load_table: Deserializes hash table stored in binary file */
-void load_table();
-
-/* save_table: Serializes hash table in binary file */
-void save_table();
-
-
 /*** USER INTERACTING FUNCTIONS ***/
 
 /* display_menu: Runs loop showing the operations a user can do */
@@ -79,7 +72,7 @@ void display_dog_data(struct dogType *);
 
 /* edit_clinical_history: Opens the dog's clinical history in a text file.
  * Is an auxiliary function to view_record. */
-void edit_clinical_history(int);
+void edit_clinical_history(unsigned long);
 
 /* delete_record:  Calls hash table delete function to remove a dog's record */
 void delete_record();
@@ -87,14 +80,13 @@ void delete_record();
 /* search_record: Calls a hash table search to retrieve a dogType's data */
 void search_record();
 
-
 /* request_id:  Prints the number of dog records stored in the table,
  * And asks the user for an ID. returns ID without checking existance */
 unsigned long request_id();
 
-/* search_with_id: Searches for a node with a given ID. If found, returns the node */
+/* search_with_id: Searches for a node with a given ID. If found, returns the
+ * node */
 Node search_with_id(unsigned long id);
-
 
 /*** HASH TABLE IMPLEMENTATION ***/
 
@@ -121,3 +113,7 @@ unsigned int search_keys_in_table(Table table, char *key);
  * reference from the table and frees its memory */
 void delete_in_table(Table, Node);
 
+/*** SERIALIZATION ***/
+
+/* serialize: Reads or writes the hash table in a binary file */
+Table serialize(Table, char);
