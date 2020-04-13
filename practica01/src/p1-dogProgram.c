@@ -116,7 +116,7 @@ void edit_clinical_history(unsigned long ID) {
   FILE *text_file;
   sprintf(file_name, "%lu.txt", ID); // File name is dog's ID
   text_file = fopen(file_name, "w"); // Write file in binary format
-  if (text_file == NULL) {                 // If pointer is NULL, fopen failed
+  if (text_file == NULL) {           // If pointer is NULL, fopen failed
     perror(OPEN_ERROR);
     exit(-1);
   } else {
@@ -164,28 +164,4 @@ Node search_with_id(unsigned long id) {
   } else {
     return node;
   }
-}
-
-struct dogType *write_record_to_file(struct dogType *dog_record) {
-  FILE *write_file; // File to store data in
-  int result;       // Return value of I/O operations, for error checking
-
-  // Instance file and write the results
-  write_file = fopen("dataDogs.dat", "wb"); // Write file in binary format
-  if (write_file == NULL) {                 // If pointer is NULL, fopen failed
-    perror(OPEN_ERROR);
-    exit(-1);
-  }
-  result = fwrite(dog_record, sizeof(struct dogType), 1, write_file);
-  // Returns the number of items written. If it's 0, it didn't write anything
-  if (result <= 0) {
-    perror(SERIALIZE_ERROR);
-    exit(-1);
-  }
-  result = fclose(write_file);
-  if (result < 0) { // fclose returns 0 on success
-    perror(CLOSE_ERROR);
-    exit(-1);
-  }
-  return dog_record;
 }
