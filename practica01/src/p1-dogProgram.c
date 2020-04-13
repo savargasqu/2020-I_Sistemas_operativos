@@ -15,7 +15,7 @@ int display_menu() {
   char wait;
 
   while (1) {
-    // system("clear"); // "cls" for windows
+    system("clear"); // "cls" for windows
     printf("Veterinaria:\n1. Ingresar registro\n2. Ver registro\n"
            "3. Borrar registro\n4. Buscar registro\n5. Salir\n"
            "Ingrese el número de una opción: ");
@@ -121,7 +121,7 @@ void edit_clinical_history(unsigned long ID) {
     exit(-1);
   } else {
     char command[64];
-    sprintf(command, "$VISUAL ./histories/%s", file_name);
+    sprintf(command, "open %s", file_name);
     system(command);
   }
 }
