@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
 
 // Define error macros in spanish
 #define OPEN_ERROR "ERROR: Archivo no se pudo abrir con exito"
@@ -87,6 +89,11 @@ unsigned long request_id();
 /* search_with_id: Searches for a node with a given ID. If found, returns the
  * node */
 Node search_with_id(unsigned long id);
+
+
+/* string_lower_case: Take a string and convert it to lower case.
+ * The string is not copied */
+void string_lower_case(char *);
 
 /*** HASH TABLE IMPLEMENTATION ***/
 

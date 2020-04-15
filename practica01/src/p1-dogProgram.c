@@ -65,7 +65,9 @@ void request_data(struct dogType *dog_record) {
   fflush(stdin);
   printf("Por favor ingrese los datos solicitados.\n");
   printf("Nombre: ");
+  char *temp;
   scanf("%s", dog_record->name);
+  string_lower_case(dog_record->name);
   printf("Tipo: ");
   scanf("%s", dog_record->species);
   printf("Edad (en años): ");
@@ -141,6 +143,7 @@ void search_record() {
   char search_name[32];
   printf("Escriba el nombre a buscar: ");
   scanf("%s", search_name);
+  string_lower_case(search_name);
   search_keys_in_table(ht, search_name);
   unsigned int count = search_keys_in_table(ht, search_name);
   printf("Se encontraron %u registros\n", count);
@@ -165,3 +168,10 @@ Node search_with_id(unsigned long id) {
     return node;
   }
 }
+
+void string_lower_case(char* str) {
+  for(int i = 0; str[i]; i++){
+    str[i] = tolower(str[i]);
+  }
+}
+

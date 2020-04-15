@@ -73,7 +73,7 @@ unsigned int search_keys_in_table(Table table, char *key) {
   unsigned int hash = poly_hash(key);
   unsigned int count = 0;
   for (Node temp = table->buckets[hash]; temp != NULL; temp = temp->next) {
-    if (temp->key == key) {
+    if (strcmp(temp->key, key) == 0) {
       printf("%lu: %s\n", temp->value, temp->key);
       count += 1;
     }
