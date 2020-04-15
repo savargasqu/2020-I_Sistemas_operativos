@@ -144,7 +144,6 @@ void search_record() {
   printf("Escriba el nombre a buscar: ");
   scanf("%s", search_name);
   string_lower_case(search_name);
-  search_keys_in_table(ht, search_name);
   unsigned int count = search_keys_in_table(ht, search_name);
   printf("Se encontraron %u registros\n", count);
 }
