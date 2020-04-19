@@ -1,7 +1,7 @@
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 
 // Define error macros in spanish
 #define OPEN_ERROR "ERROR: Archivo no se pudo abrir con exito"
@@ -50,49 +50,54 @@ struct table {
   Node buckets[HASHSIZE];
 };
 
-/* main: Loads table and calls display_menu */
+/* main: Loads table and calls display_menu, once the user sessions ends,
+ * it saves the modified table. */
 int main();
 
-/*** USER INTERACTING FUNCTIONS ***/
+/*** SERIALIZATION ***/
+
+/* serialize: Reads or writes the hash table in a binary file */
+// Table serialize(Table, char);
+
+/*** MENU / USER INTERACTING FUNCTIONS ***/
 
 /* display_menu: Runs loop showing the operations a user can do */
-int display_menu();
+int display_menu(Table);
 
 /* create_record: Create a dogType struct and call insert_to_table */
-void create_record();
+void create_record(Table);
+
+/* view_record: it either display_dog_data or write_clinical_history */
+void view_record(Table);
+
+/* delete_record:  Calls hash table delete function to remove a dog's record */
+void delete_record(Table);
+
+/* search_record_by_name: Calls a hash table search to retrieve a dogType's data
+ */
+void search_record_by_name(Table);
+
+/*** MENU / AUXILIARY FUNCTIONS ***/
 
 /* request_data: takes a dogType reference and writes the data input from user.
  * Is an auxiliary function to create_record */
 void request_data(struct dogType *);
 
-/* view_record: it calls either display_dog_data or write_clinical_history */
-void view_record();
-
-/* display_dog_data: Print the information of the requested dog record.
+/* display_dog_data: Print to stdout the information of the requested dog.
  * Is an auxiliary function to view_record. */
 void display_dog_data(struct dogType *);
 
-/* edit_clinical_history: Opens the dog's clinical history in a text file.
+/* display_clinical_history: Opens the dog's clinical history in a text file.
  * Is an auxiliary function to view_record. */
-void edit_clinical_history(unsigned long);
+void display_clinical_history(unsigned long);
 
-/* delete_record:  Calls hash table delete function to remove a dog's record */
-void delete_record();
+/* search_with_id:  Prints the number of dog records stored in the table,
+ * And requests an ID from the user, searches for a node with said ID,
+ * and returns the node. If no node is found, it returns NULL */
+Node search_by_id(Table);
 
-/* search_record: Calls a hash table search to retrieve a dogType's data */
-void search_record();
-
-/* request_id:  Prints the number of dog records stored in the table,
- * And asks the user for an ID. returns ID without checking existance */
-unsigned long request_id();
-
-/* search_with_id: Searches for a node with a given ID. If found, returns the
- * node */
-Node search_with_id(unsigned long id);
-
-
-/* string_lower_case: Take a string and convert it to lower case.
- * The string is not copied */
+/* string_lower_case: Takes a string and converts it to lower case.
+ * The string is overwritten, not copied. */
 void string_lower_case(char *);
 
 /*** HASH TABLE IMPLEMENTATION ***/
@@ -119,8 +124,3 @@ unsigned int search_keys_in_table(Table table, char *key);
 /* delete_in_table: Searches for a node. If it finds a match, it removes its
  * reference from the table and frees its memory */
 void delete_in_table(Table, Node);
-
-/*** SERIALIZATION ***/
-
-/* serialize: Reads or writes the hash table in a binary file */
-Table serialize(Table, char);
