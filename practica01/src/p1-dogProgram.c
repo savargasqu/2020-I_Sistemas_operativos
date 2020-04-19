@@ -1,11 +1,9 @@
 #include "../p1-dogProgram.h" // For ccls. Make handles dependencies
 
-// static Table ht;
-
 int main() {
-  Table ht = create_table();
-  // ht = serialize(ht, 'r');
+  //Table ht = generate_table();
+  Table ht = load_table();
   display_menu(ht);
-  // serialize(ht, 'w');
+  save_table(ht);
   return 0;
 }

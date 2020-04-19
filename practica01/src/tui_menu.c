@@ -57,13 +57,13 @@ void view_record(Table ht) {
   if (node != NULL) {
     while (1) {
       printf("Registro %lu\n1. Ver datos\n2. Ver historia clínica\n",
-             node->value);
+             node->dog.ID);
       scanf("%d", &view_selection);
       if (view_selection == 1) {
         display_dog_data(&(node->dog)); // Argument is dogType
         break;
       } else if (view_selection == 2) {
-        display_clinical_history(node->value); // Argument is ID
+        display_clinical_history(node->dog.ID); // Argument is ID
         break;
       } else {
         printf(INPUT_WARNING);
@@ -75,7 +75,7 @@ void view_record(Table ht) {
 void delete_record(Table ht) {
   Node temp = search_by_id(ht);
   if (temp != NULL) {
-    unsigned long id = temp->value;
+    unsigned long id = temp->dog.ID;
     delete_in_table(ht, temp);
     printf("Se ha eliminado el registro %lu\n", id);
     return;
@@ -142,7 +142,7 @@ void display_clinical_history(unsigned long ID) {
 
 Node search_by_id(Table ht) {
   unsigned long id; // ID of dogType record
-  printf("La tabla tiene %d registros\n", ht->size);
+  printf("La tabla tiene %lu registros\n", ht->size);
   printf("Ingrese el ID de un registro: ");
   scanf("%lu", &id);
   if (id >= 0) {

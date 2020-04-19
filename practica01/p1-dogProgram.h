@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 // Define error macros in spanish
 #define OPEN_ERROR "ERROR: Archivo no se pudo abrir con exito"
@@ -34,19 +35,19 @@ struct dogType {
   int height;       // estatura (cm)
   float weight;     // peso (Kg)
   char sex;         // sexo (H/M)
+  unsigned long ID; // ID of dogType. 4 bytes for hash. 4 bytes for unique ID
 };
 
 struct node {
   Node prev; // Pointer to the previous node. First node points to NULL
   Node next; // Pointer to the following node. Last node points to NULL
   char *key; // Name of dogType. Key for hash function
-  unsigned long value; // ID of dogType. 4 bytes for hash. 4 bytes for unique ID
   struct dogType dog;
 };
 
 struct table {
-  unsigned int size;  // Number of NODES (NOT BUCKETS) in the table
-  unsigned int count; // Number to generate ID of each node. It never decreases.
+  unsigned long size; // Number of NODES (NOT BUCKETS) in the table
+  unsigned long count; // Number to generate IDs. It never decreases.
   Node buckets[HASHSIZE];
 };
 
@@ -54,12 +55,7 @@ struct table {
  * it saves the modified table. */
 int main();
 
-/*** SERIALIZATION ***/
-
-/* serialize: Reads or writes the hash table in a binary file */
-// Table serialize(Table, char);
-
-/*** MENU / USER INTERACTING FUNCTIONS ***/
+/******** MENU / USER INTERACTING FUNCTIONS ********/
 
 /* display_menu: Runs loop showing the operations a user can do */
 int display_menu(Table);
@@ -77,7 +73,7 @@ void delete_record(Table);
  */
 void search_record_by_name(Table);
 
-/*** MENU / AUXILIARY FUNCTIONS ***/
+/******** MENU / AUXILIARY FUNCTIONS ********/
 
 /* request_data: takes a dogType reference and writes the data input from user.
  * Is an auxiliary function to create_record */
@@ -100,7 +96,8 @@ Node search_by_id(Table);
  * The string is overwritten, not copied. */
 void string_lower_case(char *);
 
-/*** HASH TABLE IMPLEMENTATION ***/
+/******** HASH TABLE IMPLEMENTATION ********
+ * NOTE: `value' is the same as the dog ID. One is just a more general name. */
 
 /* create_table: Allocate memory for a hash table. Initialize buckets as NULL*/
 Table create_table();
@@ -124,3 +121,24 @@ unsigned int search_keys_in_table(Table table, char *key);
 /* delete_in_table: Searches for a node. If it finds a match, it removes its
  * reference from the table and frees its memory */
 void delete_in_table(Table, Node);
+
+
+
+/******** SERIALIZATION ********/
+
+void save_table(Table table);
+Table load_table();
+
+/* serialize: Reads or writes the hash table in a binary file */
+// Table serialize(Table, char);
+
+
+/******** RANDOM DOG RECORD GENERATOR ********/
+
+int generate_random_int(int, int);
+float generate_random_float(float);
+char *generate_random_string(int);
+char generate_random_gender();
+struct dogType generate_dog();
+Table generate_table();
+
