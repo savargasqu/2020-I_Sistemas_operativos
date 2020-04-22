@@ -5,9 +5,9 @@
 #include <time.h>
 
 // Define error macros in spanish
-#define OPEN_ERROR "ERROR: Archivo no se pudo abrir con exito"
-#define SERIALIZE_ERROR "ERROR: Archivo no se pudo leer/escribir con exito"
-#define CLOSE_ERROR "ERROR: Archivo no se pudo cerrar con exito"
+#define OPEN_ERROR "ERROR: Archivo no se pudo abrir con éxito"
+#define SERIALIZE_ERROR "ERROR: Archivo no se pudo leer/escribir con éxito"
+#define CLOSE_ERROR "ERROR: Archivo no se pudo cerrar con éxito"
 #define MEMORY_ERROR "ERROR: Falla en la alocación de memoria"
 #define INPUT_WARNING "Ingrese un opción correcta\n"
 
@@ -17,7 +17,7 @@
 // Hash table cardinality. Should be a prime number!
 #define HASHSIZE 10111
 
-// Structures with their correspoding pointer type
+// Structures with their corresponding pointer type
 struct node;
 typedef struct node *Node;
 struct list;
@@ -46,7 +46,7 @@ struct node {
 };
 
 struct table {
-  unsigned long size; // Number of NODES (NOT BUCKETS) in the table
+  unsigned long size;  // Number of NODES (NOT BUCKETS) in the table
   unsigned long count; // Number to generate IDs. It never decreases.
   Node buckets[HASHSIZE];
 };
@@ -69,8 +69,7 @@ void view_record(Table);
 /* delete_record:  Calls hash table delete function to remove a dog's record */
 void delete_record(Table);
 
-/* search_record_by_name: Calls a hash table search to retrieve a dogType's data
- */
+/* search_record_by_name: Calls a table search to retrieve a dogType's data */
 void search_record_by_name(Table);
 
 /******** MENU / AUXILIARY FUNCTIONS ********/
@@ -122,8 +121,6 @@ unsigned int search_keys_in_table(Table table, char *key);
  * reference from the table and frees its memory */
 void delete_in_table(Table, Node);
 
-
-
 /******** SERIALIZATION ********/
 
 void save_table(Table table);
@@ -132,13 +129,25 @@ Table load_table();
 /* serialize: Reads or writes the hash table in a binary file */
 // Table serialize(Table, char);
 
-
 /******** RANDOM DOG RECORD GENERATOR ********/
 
+/* generate_random_int: Returns a random integer in range [min, max) */
 int generate_random_int(int, int);
+
+/* generate_random_float: Returns a random floating point number
+ * in range [0, max) */
 float generate_random_float(float);
+
+/* generate_random_string: Takes an integer x as argument and
+ * returns a random string of length x */
 char *generate_random_string(int);
+
+/* generate_random_gender: Returns either 'H' or 'M' with 50% probability */
 char generate_random_gender();
+
+/* Generates a dogType struct with random attributes */
 struct dogType generate_dog();
+
+/* generate_table: Returns a hash table filled with generated dogType structs */
 Table generate_table();
 
