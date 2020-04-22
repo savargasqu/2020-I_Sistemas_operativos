@@ -15,7 +15,6 @@ void save_table(Table table) {
   // Iterate over th hash table and write all the records to the file
   for (unsigned long i = 0; i <= HASHSIZE; i++) {
     for (Node temp = table->buckets[i]; temp != NULL; temp = temp->next) {
-      printf("writing");
       result = fwrite(temp_dog_record, sizeof(struct dogType), 1, file_ptr);
       // Check if there was an error
       if (result <= 0) {
