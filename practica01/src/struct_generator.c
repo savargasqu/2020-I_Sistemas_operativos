@@ -1,6 +1,6 @@
 #include "../p1-dogProgram.h"
 
-#define NUMBER_OF_STRUCTS 1000000
+#define NUMBER_OF_STRUCTS 10000000
 
 int main() {
   Table ht = generate_table();

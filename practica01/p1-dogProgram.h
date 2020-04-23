@@ -55,15 +55,16 @@ struct table {
  * it saves the modified table. */
 int main();
 
+
 /******** MENU / USER INTERACTING FUNCTIONS ********/
 
 /* display_menu: Runs loop showing the operations a user can do */
 int display_menu(Table);
 
-/* create_record: Create a dogType struct and call insert_to_table */
+/* create_record: Creates a dogType struct and calls insert_to_table */
 void create_record(Table);
 
-/* view_record: it either display_dog_data or write_clinical_history */
+/* view_record: it either calls display_dog_data or write_clinical_history */
 void view_record(Table);
 
 /* delete_record:  Calls hash table delete function to remove a dog's record */
@@ -87,7 +88,7 @@ void display_dog_data(struct dogType *);
 void display_clinical_history(unsigned long);
 
 /* search_with_id:  Prints the number of dog records stored in the table,
- * And requests an ID from the user, searches for a node with said ID,
+ * And requests an ID from the user, it then searches for a node with said ID,
  * and returns the node. If no node is found, it returns NULL */
 Node search_by_id(Table);
 
@@ -95,10 +96,11 @@ Node search_by_id(Table);
  * The string is overwritten, not copied. */
 void string_lower_case(char *);
 
+
 /******** HASH TABLE IMPLEMENTATION ********
  * NOTE: `value' is the same as the dog ID. One is just a more general name. */
 
-/* create_table: Allocate memory for a hash table. Initialize buckets as NULL*/
+/* create_table: Allocate memory for a hash table. Initialize buckets as NULL */
 Table create_table();
 
 /* poly_hash: Calculates the polynomial hash of string S
@@ -109,27 +111,37 @@ unsigned int poly_hash(char *);
  * Returns the value v of the new node */
 int insert_to_table(Table, char *, struct dogType);
 
-/* search_value_in_table: Search a node with value val. Values are unique.
+/* search_value_in_table: Search a node with a given value. Values are unique.
  * If a node is found, return a pointer to the node, otherwise return NULL */
-Node search_value_in_table(Table table, int val);
+Node search_value_in_table(Table, unsigned long);
 
 /* search_keys_in_table: Takes a key and prints all nodes with that key,
  * return the number of nodes found */
-unsigned int search_keys_in_table(Table table, char *key);
+unsigned int search_keys_in_table(Table, char *);
 
 /* delete_in_table: Searches for a node. If it finds a match, it removes its
  * reference from the table and frees its memory */
 void delete_in_table(Table, Node);
 
+
 /******** SERIALIZATION ********/
 
-void save_table(Table table);
+/* save_table: Takes as argument a hash table, then it opens a binary file
+ * and writes all the dogType records of the table in the file */
+void save_table(Table);
+
+/* load_table: Reads the records stored in a binary file,
+ * inserts them in a new hash table and returns said table. */
 Table load_table();
 
-/* serialize: Reads or writes the hash table in a binary file */
-// Table serialize(Table, char);
 
 /******** RANDOM DOG RECORD GENERATOR ********/
+
+/* generate_table: Returns a hash table filled with generated dogType structs */
+Table generate_table();
+
+/* Generates a dogType struct with random attributes */
+struct dogType generate_dog();
 
 /* generate_random_int: Returns a random integer in range [min, max) */
 int generate_random_int(int, int);
@@ -144,10 +156,4 @@ char *generate_random_string(int);
 
 /* generate_random_gender: Returns either 'H' or 'M' with 50% probability */
 char generate_random_gender();
-
-/* Generates a dogType struct with random attributes */
-struct dogType generate_dog();
-
-/* generate_table: Returns a hash table filled with generated dogType structs */
-Table generate_table();
 

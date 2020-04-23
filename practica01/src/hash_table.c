@@ -39,7 +39,6 @@ int insert_to_table(Table table, char *key, struct dogType dog) {
   }
   node->key = key;
   node->dog = dog;
-  // node->value = value; // Assign unique ID
   // Insert node at the beginning of the list
   head = table->buckets[hash];
   if (head != NULL) { // The list is not empty
@@ -54,7 +53,7 @@ int insert_to_table(Table table, char *key, struct dogType dog) {
   return dog.ID;
 }
 
-Node search_value_in_table(Table table, int val) {
+Node search_value_in_table(Table table, unsigned long val) {
   unsigned int hash = (val >> 4); // Recover hash from value
   for (Node temp = table->buckets[hash]; temp != NULL; temp = temp->next) {
     if (temp->dog.ID == val) {

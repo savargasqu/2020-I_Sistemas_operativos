@@ -8,7 +8,6 @@ int main() {
 }
 
 int display_menu(Table ht) {
-  struct dogType *dog_record; // Pointer to structure
   int menu_selection = -1;
   char wait;
 
