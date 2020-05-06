@@ -1,7 +1,11 @@
+# not important
+books
+template.c
+.ccls
+*.pdf
+
 *.o
 *.out
 *.dat
-.ccls
 practica01/p1-dogProgram
 practica01/struct_generator
-practica01/practica1.pdf
