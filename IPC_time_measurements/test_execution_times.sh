@@ -26,11 +26,11 @@ let "num=$num*10"
 { time ./bin/shared_memory $num; } 2>> "times.txt"
 done
 
-#num=25
-#for i in 0 1 2 3 4 5
-#do
-#let "num=$num*10"
-#{ time ./bin/server $num &; } 2> times.txt # Keep in background to run client
-#./bin/client $num localhost
-#done
+num=25
+for i in 0 1 2 3 4 5
+do
+let "num=$num*10"
+{ time ./bin/server $num &; } 2> times.txt # Keep in background to run client
+./bin/client $num localhost
+done
 

@@ -10,7 +10,7 @@ int main(int argc, char *argv[]) {
   shmId = shmget(IPC_PRIVATE, num_ints * sizeof(int), 0666 | IPC_CREAT);
   if (shmId < 0) {
     perror("Error in shmget() ");
-    exit(-1);
+    exit(EXIT_FAILURE);
   }
   // Map shared memory to this process
   ap = (int *)shmat(shmId, 0, 0); 
@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
   r = shmdt(ap); 
   if (r < 0) {
     perror("Error in shmdt() ");
-    exit(-1);
+    exit(EXIT_FAILURE);
   }
 
   return 0;

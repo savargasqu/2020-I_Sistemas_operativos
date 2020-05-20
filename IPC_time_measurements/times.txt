@@ -1,0 +1,77 @@
+TIMES FOR BINARY FILES
+
+real	0m0.015s
+user	0m0.002s
+sys	0m0.010s
+
+real	0m0.004s
+user	0m0.001s
+sys	0m0.002s
+
+real	0m0.007s
+user	0m0.004s
+sys	0m0.002s
+
+real	0m0.037s
+user	0m0.031s
+sys	0m0.004s
+
+real	0m0.325s
+user	0m0.299s
+sys	0m0.020s
+
+real	0m3.297s
+user	0m3.009s
+sys	0m0.168s
+TIMES FOR PIPES
+
+real	0m0.005s
+user	0m0.001s
+sys	0m0.002s
+
+real	0m0.008s
+user	0m0.002s
+sys	0m0.004s
+
+real	0m0.026s
+user	0m0.007s
+sys	0m0.017s
+
+real	0m0.212s
+user	0m0.063s
+sys	0m0.145s
+
+real	0m2.075s
+user	0m1.253s
+sys	0m2.846s
+
+real	0m21.460s
+user	0m12.649s
+sys	0m28.708s
+TIMES FOR SHARED MEMORY
+
+real	0m0.007s
+user	0m0.001s
+sys	0m0.004s
+
+real	0m0.008s
+user	0m0.001s
+sys	0m0.004s
+
+real	0m0.006s
+user	0m0.002s
+sys	0m0.003s
+
+real	0m0.009s
+user	0m0.004s
+sys	0m0.003s
+Error in shmget() : Invalid argument
+
+real	0m0.004s
+user	0m0.001s
+sys	0m0.002s
+Error in shmget() : Invalid argument
+
+real	0m0.003s
+user	0m0.001s
+sys	0m0.001s
