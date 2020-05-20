@@ -4,6 +4,7 @@ template.c
 .ccls
 *.pdf
 
+bin/
 *.o
 *.out
 *.dat
