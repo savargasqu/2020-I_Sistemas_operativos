@@ -1,0 +1,38 @@
+%! TEX program = xelatex
+%! TEX encoding = UTF-8 Unicode
+
+
+% PREAMBLE
+    \documentclass[11pt]{article}
+    \usepackage{$HOME/.tex/vargas}  % My style file
+    \geometry{letterpaper}
+    %\geometry{papersize={9cm,12cm}, margin=0.1cm} %Kindle 4 dimensions
+    \providecommand{\tightlist}{%
+      \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+% TITLE & AUTHOR
+    \myarticletitle[Parcial 1.3.]{Medición de tiempos para métodos IPC}{Sistemas Operativos}{Grupo 1}
+    % \date{\today} % Title command doesn't include date
+
+
+\begin{document}
+\maketitle
+
+
+% BODY TEXT
+    % Use input w/o extension.
+    \input{text/statement}
+    \input{text/results}
+
+    % listings should always be on their own source code file
+    %\lstset{style=mycolorstyle}
+    %\lstinputlisting[language=Python, caption=Python color example (from source)]{listings/listing.py}
+
+
+% REFERENCES
+    % \bibliographystyle{plain}
+    % \bibliography{bibliog}
+
+
+\end{document}
+
