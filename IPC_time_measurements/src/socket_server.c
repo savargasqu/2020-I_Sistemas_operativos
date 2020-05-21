@@ -4,7 +4,7 @@ int main(int argc, char *argv[]) {
   int r, serverfd, clientfd, opt = 1;
   int rand_num;
   struct sockaddr_in server, client;
-  socklen_t socket_size;
+  socklen_t socket_len;
   int num_ints = atoi(argv[1]); // Number of integers (4 bytes) to transmit.
 
   serverfd = socket(AF_INET, SOCK_STREAM, 0); // Create socket file descriptor
@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
   }
 
   // New file descriptor for the client
-  clientfd = accept(serverfd, (struct sockaddr *)&client, &socket_size);
+  clientfd = accept(serverfd, (struct sockaddr *)&client, &socket_len);
   if (clientfd < 0) {
     perror("Error in accept() ");
     exit(EXIT_FAILURE);

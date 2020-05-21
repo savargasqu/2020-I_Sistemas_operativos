@@ -1,77 +1,32 @@
 TIMES FOR BINARY FILES
-
-real	0m0.015s
-user	0m0.002s
-sys	0m0.010s
-
-real	0m0.004s
-user	0m0.001s
-sys	0m0.002s
-
-real	0m0.007s
-user	0m0.004s
-sys	0m0.002s
-
-real	0m0.037s
-user	0m0.031s
-sys	0m0.004s
-
-real	0m0.325s
-user	0m0.299s
-sys	0m0.020s
-
-real	0m3.297s
-user	0m3.009s
-sys	0m0.168s
+./bin/bin_files $num  0.01s user 0.03s system 100% cpu 0.043 total
+./bin/bin_files $num  0.00s user 0.00s system 100% cpu 0.006 total
+./bin/bin_files $num  0.01s user 0.00s system 96% cpu 0.011 total
+./bin/bin_files $num  0.05s user 0.01s system 97% cpu 0.056 total
+./bin/bin_files $num  0.41s user 0.04s system 83% cpu 0.540 total
+./bin/bin_files $num  3.87s user 0.50s system 85% cpu 5.114 total
 TIMES FOR PIPES
-
-real	0m0.005s
-user	0m0.001s
-sys	0m0.002s
-
-real	0m0.008s
-user	0m0.002s
-sys	0m0.004s
-
-real	0m0.026s
-user	0m0.007s
-sys	0m0.017s
-
-real	0m0.212s
-user	0m0.063s
-sys	0m0.145s
-
-real	0m2.075s
-user	0m1.253s
-sys	0m2.846s
-
-real	0m21.460s
-user	0m12.649s
-sys	0m28.708s
+./bin/pipes $num  0.00s user 0.00s system 62% cpu 0.006 total
+./bin/pipes $num  0.00s user 0.01s system 87% cpu 0.008 total
+./bin/pipes $num  0.00s user 0.03s system 75% cpu 0.046 total
+./bin/pipes $num  0.04s user 0.29s system 95% cpu 0.348 total
+./bin/pipes $num  0.31s user 3.03s system 99% cpu 3.367 total
+./bin/pipes $num  3.06s user 26.18s system 99% cpu 29.343 total
 TIMES FOR SHARED MEMORY
-
-real	0m0.007s
-user	0m0.001s
-sys	0m0.004s
-
-real	0m0.008s
-user	0m0.001s
-sys	0m0.004s
-
-real	0m0.006s
-user	0m0.002s
-sys	0m0.003s
-
-real	0m0.009s
-user	0m0.004s
-sys	0m0.003s
-Error in shmget() : Invalid argument
-
-real	0m0.004s
-user	0m0.001s
-sys	0m0.002s
-Error in shmget() : Invalid argument
-
-real	0m0.003s
-user	0m0.001s
-sys	0m0.001s
+./bin/shared_memory $num  0.00s user 0.00s system 74% cpu 0.005 total
+./bin/shared_memory $num  0.00s user 0.00s system 85% cpu 0.005 total
+./bin/shared_memory $num  0.00s user 0.01s system 89% cpu 0.006 total
+./bin/shared_memory $num  0.02s user 0.00s system 96% cpu 0.021 total
+./bin/shared_memory $num  0.11s user 0.03s system 96% cpu 0.145 total
+./bin/shared_memory $num  1.06s user 0.22s system 99% cpu 1.294 total
+TIMES FOR SOCKETS
+Error in accept() : Invalid argument
+./bin/server $num  0.00s user 0.00s system 46% cpu 0.010 total
+Error in accept() : Invalid argument
+./bin/server $num  0.00s user 0.00s system 40% cpu 0.008 total
+Error in accept() : Invalid argument
+./bin/server $num  0.00s user 0.00s system 42% cpu 0.008 total
+./bin/server $num  0.07s user 0.35s system 95% cpu 0.443 total
+./bin/server $num  0.73s user 3.84s system 99% cpu 4.611 total
+Error in accept() : Invalid argument
+./bin/server $num  0.00s user 0.00s system 39% cpu 0.008 total

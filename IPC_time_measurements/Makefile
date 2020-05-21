@@ -1,7 +1,6 @@
 # TODO: Corregir Makefile (OBJDIR)
 CC=gcc
 CFLAGS=-I$(IDIR)
-CC=clang
 CFLAGS=-I.
 SRCDIR=src
 BINDIR=bin
