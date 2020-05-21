@@ -1,32 +1,102 @@
 TIMES FOR BINARY FILES
-./bin/bin_files $num  0.01s user 0.03s system 100% cpu 0.043 total
-./bin/bin_files $num  0.00s user 0.00s system 100% cpu 0.006 total
-./bin/bin_files $num  0.01s user 0.00s system 96% cpu 0.011 total
-./bin/bin_files $num  0.05s user 0.01s system 97% cpu 0.056 total
-./bin/bin_files $num  0.41s user 0.04s system 83% cpu 0.540 total
-./bin/bin_files $num  3.87s user 0.50s system 85% cpu 5.114 total
+
+real	0m0.041s
+user	0m0.001s
+sys	0m0.041s
+
+real	0m0.005s
+user	0m0.003s
+sys	0m0.002s
+
+real	0m0.011s
+user	0m0.005s
+sys	0m0.006s
+
+real	0m0.059s
+user	0m0.047s
+sys	0m0.009s
+
+real	0m0.543s
+user	0m0.395s
+sys	0m0.053s
+
+real	0m5.028s
+user	0m3.852s
+sys	0m0.507s
 TIMES FOR PIPES
-./bin/pipes $num  0.00s user 0.00s system 62% cpu 0.006 total
-./bin/pipes $num  0.00s user 0.01s system 87% cpu 0.008 total
-./bin/pipes $num  0.00s user 0.03s system 75% cpu 0.046 total
-./bin/pipes $num  0.04s user 0.29s system 95% cpu 0.348 total
-./bin/pipes $num  0.31s user 3.03s system 99% cpu 3.367 total
-./bin/pipes $num  3.06s user 26.18s system 99% cpu 29.343 total
+
+real	0m0.006s
+user	0m0.000s
+sys	0m0.005s
+
+real	0m0.008s
+user	0m0.000s
+sys	0m0.007s
+
+real	0m0.045s
+user	0m0.000s
+sys	0m0.038s
+
+real	0m0.388s
+user	0m0.053s
+sys	0m0.329s
+
+real	0m3.206s
+user	0m0.312s
+sys	0m2.872s
+
+real	0m32.471s
+user	0m2.896s
+sys	0m29.437s
 TIMES FOR SHARED MEMORY
-./bin/shared_memory $num  0.00s user 0.00s system 74% cpu 0.005 total
-./bin/shared_memory $num  0.00s user 0.00s system 85% cpu 0.005 total
-./bin/shared_memory $num  0.00s user 0.01s system 89% cpu 0.006 total
-./bin/shared_memory $num  0.02s user 0.00s system 96% cpu 0.021 total
-./bin/shared_memory $num  0.11s user 0.03s system 96% cpu 0.145 total
-./bin/shared_memory $num  1.06s user 0.22s system 99% cpu 1.294 total
+
+real	0m0.004s
+user	0m0.001s
+sys	0m0.003s
+
+real	0m0.004s
+user	0m0.001s
+sys	0m0.003s
+
+real	0m0.006s
+user	0m0.004s
+sys	0m0.002s
+
+real	0m0.019s
+user	0m0.011s
+sys	0m0.008s
+
+real	0m0.138s
+user	0m0.119s
+sys	0m0.016s
+
+real	0m1.290s
+user	0m1.117s
+sys	0m0.168s
 TIMES FOR SOCKETS
+
+real	0m0.010s
+user	0m0.001s
+sys	0m0.003s
+
+real	0m0.015s
+user	0m0.000s
+sys	0m0.011s
 Error in accept() : Invalid argument
-./bin/server $num  0.00s user 0.00s system 46% cpu 0.010 total
+
+real	0m0.007s
+user	0m0.003s
+sys	0m0.000s
 Error in accept() : Invalid argument
-./bin/server $num  0.00s user 0.00s system 40% cpu 0.008 total
-Error in accept() : Invalid argument
-./bin/server $num  0.00s user 0.00s system 42% cpu 0.008 total
-./bin/server $num  0.07s user 0.35s system 95% cpu 0.443 total
-./bin/server $num  0.73s user 3.84s system 99% cpu 4.611 total
-Error in accept() : Invalid argument
-./bin/server $num  0.00s user 0.00s system 39% cpu 0.008 total
+
+real	0m0.008s
+user	0m0.003s
+sys	0m0.001s
+
+real	0m4.688s
+user	0m0.668s
+sys	0m4.005s
+
+real	0m47.362s
+user	0m6.352s
+sys	0m40.945s
