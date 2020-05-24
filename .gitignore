@@ -1,9 +1,6 @@
-# not important
 books
-template.c
 .ccls
 *.pdf
-
 bin/
 *.o
 *.out
