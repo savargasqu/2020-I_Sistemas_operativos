@@ -28,5 +28,5 @@ y graficar los resultados.
 
 # Referencias
 
-Silberschatz, Galvin, Gagn. (2018) _Operating system concepts_ (10^a Ed.) § 3 Processes
+Silberschatz, Galvin, Gagne. (2018) _Operating system concepts_ (10^a Ed.) § 3 Processes
 
