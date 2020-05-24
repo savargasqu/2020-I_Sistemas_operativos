@@ -25,3 +25,8 @@ y graficar los resultados.
 - ` 10 MB`
 - `100 MB`
 
+
+# Referencias
+
+Silberschatz, Galvin, Gagn. (2018) _Operating system concepts_ (10^a Ed.) § 3 Processes
+
