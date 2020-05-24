@@ -1,4 +1,4 @@
-# Medición de tiempos para diferentes IPC
+# Presentación – Red Hat
 
 Sistemas Operativos (Grupo 1) 2020-I
 
