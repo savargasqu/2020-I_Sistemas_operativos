@@ -7,7 +7,7 @@
  * NOTE: Do all modifications on this file
  * When finished:
  * Update header file
- * Keep the same file structure. It'll make easier the 2nd practice easier
+ * Keep the same file structure. It'll make the 2nd practice easier
  */
 #include <stdbool.h>
 #include <stdio.h>
@@ -31,8 +31,8 @@ typedef struct {
 
 // OPEN ADDRESSING HASH TABLE FILE
 
-/* open_file_table: */
-table_t *open_file_table() {
+/* open_table_file: */
+table_t *open_table_file() {
   table_t *new_table = (table_t *)malloc(sizeof(table_t));
   if ((new_table->fptr = fopen(FILE_NAME, "wb+")) == NULL) {
     perror("ERROR fopen");
@@ -44,8 +44,8 @@ table_t *open_file_table() {
   return new_table;
 }
 
-/* close_file_table: */
-void close_file_table(table_t *table) {
+/* close_table_file: */
+void close_table_file(table_t *table) {
   if (fclose(table->fptr) != 0) {
     perror("ERROR fclose");
     exit(-1);
@@ -71,8 +71,8 @@ void modify_record(record_t *new_record) {
   scanf("%d", &new_record->age);
 }
 
-/* write_record_to_file */
-void write_record_to_file(table_t *table_ptr, record_t *record_ptr) {
+/* write_record: */
+void write_record(table_t *table_ptr, record_t *record_ptr) {
   // Get hash
   // fseek
   if (fwrite(record_ptr, sizeof(record_t), 1, table_ptr->fptr) <= 0) {
@@ -82,8 +82,8 @@ void write_record_to_file(table_t *table_ptr, record_t *record_ptr) {
   table_ptr->size += 1;
 }
 
-/* read_record_from_file: */
-void read_record_from_file(table_t *table_ptr, record_t *record_ptr) {
+/* read_record: */
+void read_record(table_t *table_ptr, record_t *record_ptr) {
   if (fread(record_ptr, sizeof(record_t), 1, table_ptr->fptr) <= 0) {
     perror("ERROR fread");
     exit(-1);
@@ -100,20 +100,20 @@ void print_record(record_t *record_ptr) {
 int main() {
   int res; // Result. For error handling
 
-  table_t *table = open_file_table(); // Initialize table
+  table_t *table = open_table_file(); // Initialize table
 
   record_t *temp_write_ptr = (record_t *)malloc(sizeof(record_t));
 
   for (int i = 0; i < NUM_RECORDS; i++) {
     modify_record(temp_write_ptr);
-    write_record_to_file(table, temp_write_ptr);
+    write_record(table, temp_write_ptr);
   }
 
   rewind(table->fptr); // Put file pointer back at the beginning of the file
 
   record_t *temp_read_ptr = (record_t *)malloc(sizeof(record_t));
   for (int i = 0; i < NUM_RECORDS; i++) {
-    read_record_from_file(table, temp_read_ptr);
+    read_record(table, temp_read_ptr);
     print_record(temp_read_ptr);
   }
 
