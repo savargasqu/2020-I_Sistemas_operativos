@@ -1,4 +1,4 @@
-#include "p1-dogProgram.h"
+#include "../p1-dogProgram.h"
 
 /* poly_hash: Polynomial hash function for strings */
 unsigned int poly_hash(char *s) {

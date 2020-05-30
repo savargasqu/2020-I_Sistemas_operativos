@@ -1,5 +1,43 @@
-#include "p1-dogProgram.h"
+#include "../p1-dogProgram.h"
 /* RANDOMIZATION MODULE */
+
+/* generate_random_table: Takes a table and fills it with random records */
+void generate_random_table(table_t *table_ptr) {
+  srand(time(NULL)); // For randomization. It should only be called once
+  unsigned k;
+  record_t *temp = (record_t *)malloc(sizeof(record_t));
+  for (int i = 0; i < NUM_RECORDS - 1; i++) {
+    generate_random_record(temp);
+    k = search_record(table_ptr, poly_hash(temp->name), "");
+    insert_record(table_ptr, temp, k);
+    printf("%d: %s\n", k, temp->name); // For debugging
+  }
+}
+
+/* generate_random_record: */
+void generate_random_record(record_t *record) {
+  strcpy(record->name, generate_random_string(8));
+  record->age = generate_random_int(1, 100);
+}
+
+/* generate_random_int: */
+int generate_random_int(int min, int max) {
+  return (rand() % (max - min + 1)) + min; // range [min, max]
+}
+
+/* generate_random_string: */
+char *generate_random_string(int str_len) {
+  char *rstr = malloc((str_len) * sizeof(char));
+  int name_len = generate_random_int(1, str_len - 2);
+  int i;
+  for (i = 0; i < name_len; i++) {
+    rstr[i] = generate_random_int(97, 122); // ASCII a-z
+  }
+  rstr[str_len - 1] = '\0';
+  return rstr;
+}
+
+//----------------------------------------
 float generate_random_float(float max) {
   return ((float)rand() / (float)(RAND_MAX)) * max;
 }
@@ -11,7 +49,7 @@ char generate_random_gender() {
   return 'M';
 }
 
-//struct dogType generate_dog() {
+// struct dogType generate_dog() {
 //  struct dogType *dog_ptr = (struct dogType *)malloc(sizeof(struct dogType));
 //  strcpy(dog_ptr->name, generate_random_string(32));
 //  strcpy(dog_ptr->species, generate_random_string(32));
@@ -24,4 +62,3 @@ char generate_random_gender() {
 //
 //  return *dog_ptr;
 //}
-

@@ -8,105 +8,23 @@
  */
 
 /*** MODULE: OPEN ADDRESSING HASH TABLE FILE ***/
-#include "p1-dogProgram.h"
-/**** MENU OPERATIONS ****/
+#include "../p1-dogProgram.h"
 
-// Computes hash and calls probe function
-// int pos = search_record(table, poly_hash(new_record->name), "");
-
-/* insert_record: inserts new_record to table */
-int insert_record(table_t *table, record_t *new_record, unsigned position) {
-  if (position >= 0) {
-    lookup_in_table(table, position); // Set table pointer to the right position
-    write_to_table(table, new_record); // Write record to table
-    table->size += 1;
-    return 0; // If operation was successful
-  }
-  return -1; // Insert failed
-}
-
-void view_record(table_t *table, record_t *temp, int id) {
-  lookup_in_table(table, id);
-  read_from_table(table, temp);
-  if (strcmp(temp->name, "") == 0) {
-    printf("No hay registro con este ID");
-  } else {
-    print_record(temp);
-    // TODO: Add text file
-  }
-}
-
-void delete_record(table_t *table, record_t *temp, int id) {
-  lookup_in_table(table, id);
-  read_from_table(table, temp);
-  // Writing a null struct is equivalent to deleting it
-  strcpy(temp->name, "");
-  temp->age = 0;
-  write_to_table(table, temp);
-  table->size -= 1;
-}
-
-/* search_record: Performs two types of probing
- * if name is empty, it returns the position of the first empty slot it finds
- * if name isn't empty, it prints all the records matching the name */
-int search_record(table_t *table, int position, char *name) {
+int main() {
+  table_t *table = open_table_file(); // Initialize table
+  generate_random_table(table);       // Fill table
   record_t *temp = allocate_record();
-  int i;
-  // Move over to the position where the search begins (hash value)
-  lookup_in_table(table, position);
-  // iterate over the table starting from position
-  for (i = position; i < NUM_RECORDS - 1; i++) {
+
+  // Put file pointer back at the beginning of the file
+  rewind(table->fptr);
+  // Read all the records written to the file
+  for (int i = 0; i < NUM_RECORDS - 1; i++) {
     read_from_table(table, temp);
-    if (strcmp(temp->name, "") == 0) { // if there's no record on the spot
-      free(temp);
-      return i; // We found an empty slot
-    } else if (strcmp(temp->name, name) == 0) {
-      printf("ID: %d ", i); // if name coincides print ID
-      print_record(temp);   // and print record
-    }
+    print_record(temp);
   }
+  display_menu(table, temp);
   free(temp);
-  return -1;
-}
-
-/* ask_id: Prints the size of the table and reads an integer from stdin */
-unsigned ask_id(table_t *table) {
-  unsigned id; // ID of record
-  printf("La tabla tiene %u registros\n", table->size);
-  printf("Ingrese el ID de un registro: ");
-  scanf("%u", &id);
-  return id;
-}
-
-/* ask_new_record: Reads fields from stdin and assigns them to the new_record */
-void ask_new_record(record_t *new_record) {
-  printf("Edit record\nname:");
-  scanf("%s", new_record->name);
-  printf("age:");
-  scanf("%d", &new_record->age);
-}
-
-void str_lower_case(char *str) {
-  for (int i = 0; str[i]; i++) {
-    str[i] = tolower(str[i]);
-  }
-}
-
-char *ask_name() {
-  char *name = malloc(sizeof(char) * 32);
-  while (strcmp(name, "") == 0) { // Name cannot be empty
-    printf("Escriba el nombre a buscar: ");
-    scanf("%s", name);
-    str_lower_case(name);
-  }
-  return name;
-}
-
-/* print_record: */
-void print_record(record_t *record_ptr) {
-  printf("record\n");
-  printf("name: '%s'\n", record_ptr->name);
-  printf(" age:  %d;\n", record_ptr->age);
+  return 0;
 }
 
 int display_menu(table_t *ht, record_t *temp) {
@@ -153,58 +71,102 @@ int display_menu(table_t *ht, record_t *temp) {
   }
 }
 
-/* TEST MAIN */
-int main() {
-  table_t *table = open_table_file(); // Initialize table
-  generate_random_table(table);       // Fill table
-  record_t *temp = allocate_record();
+/**** MENU OPERATIONS ****/
 
-  // Put file pointer back at the beginning of the file
-  rewind(table->fptr);
-  // Read all the records written to the file
-  for (int i = 0; i < NUM_RECORDS - 1; i++) {
-    read_from_table(table, temp);
+/* insert_record: inserts new_record to table */
+int insert_record(table_t *table, record_t *new_record, unsigned position) {
+  if (position >= 0) {
+    lookup_in_table(table, position); // Set table pointer to the right position
+    write_to_table(table, new_record); // Write record to table
+    table->size += 1;
+    return 0; // If operation was successful
+  }
+  return -1; // Insert failed
+}
+
+void view_record(table_t *table, record_t *temp, unsigned id) {
+  lookup_in_table(table, id);
+  read_from_table(table, temp);
+  if (strcmp(temp->name, "") == 0) {
+    printf("No hay registro con este ID");
+  } else {
     print_record(temp);
-  }
-  display_menu(table, temp);
-  free(temp);
-  return 0;
-}
-
-/* RANDOMIZATION MODULE */
-
-/* generate_random_table: Takes a table and fills it with random records */
-void generate_random_table(table_t *table_ptr) {
-  srand(time(NULL)); // For randomization. It should only be called once
-  unsigned k;
-  record_t *temp = (record_t *)malloc(sizeof(record_t));
-  for (int i = 0; i < NUM_RECORDS - 1; i++) {
-    generate_random_record(temp);
-    k = search_record(table_ptr, poly_hash(temp->name), "");
-    insert_record(table_ptr, temp, k);
-    printf("%d: %s\n", k, temp->name); // For debugging
+    // TODO: Add text file
   }
 }
 
-/* generate_random_int: */
-int generate_random_int(int min, int max) {
-  return (rand() % (max - min + 1)) + min; // range [min, max]
+void delete_record(table_t *table, record_t *temp, unsigned id) {
+  lookup_in_table(table, id);
+  read_from_table(table, temp);
+  // Writing a null struct is equivalent to deleting it
+  strcpy(temp->name, "");
+  temp->age = 0;
+  write_to_table(table, temp);
+  table->size -= 1;
 }
 
-/* generate_random_string: */
-char *generate_random_string(int str_len) {
-  char *rstr = malloc((str_len) * sizeof(char));
-  int name_len = generate_random_int(1, str_len - 2);
+/* search_record: Performs two types of probing
+ * if name is empty, it returns the position of the first empty slot it finds
+ * if name isn't empty, it prints all the records matching the name */
+int search_record(table_t *table, unsigned position, char *name) {
+  record_t *temp = allocate_record();
   int i;
-  for (i = 0; i < name_len; i++) {
-    rstr[i] = generate_random_int(97, 122); // ASCII a-z
+  // Move over to the position where the search begins (hash value)
+  lookup_in_table(table, position);
+  // iterate over the table starting from position
+  for (i = position; i < NUM_RECORDS - 1; i++) {
+    read_from_table(table, temp);
+    if (strcmp(temp->name, "") == 0) { // if there's no record on the spot
+      free(temp);
+      return i; // We found an empty slot
+    } else if (strcmp(temp->name, name) == 0) {
+      printf("ID: %d ", i); // if name coincides print ID
+      print_record(temp);   // and print record
+    }
   }
-  rstr[str_len - 1] = '\0';
-  return rstr;
+  free(temp);
+  return -1;
 }
 
-/* generate_random_record: */
-void generate_random_record(record_t *record) {
-  strcpy(record->name, generate_random_string(8));
-  record->age = generate_random_int(1, 100);
+/* Auxiliary functions */
+
+/* ask_new_record: Reads fields from stdin and assigns them to the new_record */
+void ask_new_record(record_t *new_record) {
+  printf("Edit record\nname:");
+  scanf("%s", new_record->name);
+  printf("age:");
+  scanf("%d", &new_record->age);
+}
+
+/* ask_id: Prints the size of the table and reads an integer from stdin */
+unsigned ask_id(table_t *table) {
+  // TODO check id is valid
+  unsigned id; // ID of record
+  printf("La tabla tiene %u registros\n", table->size);
+  printf("Ingrese el ID de un registro: ");
+  scanf("%u", &id);
+  return id;
+}
+
+char *ask_name() {
+  char *name = malloc(sizeof(char) * 32);
+  while (strcmp(name, "") == 0) { // Name cannot be empty
+    printf("Escriba el nombre a buscar: ");
+    scanf("%s", name);
+    str_lower_case(name);
+  }
+  return name;
+}
+
+void str_lower_case(char *str) {
+  for (int i = 0; str[i]; i++) {
+    str[i] = tolower(str[i]);
+  }
+}
+
+/* print_record: */
+void print_record(record_t *record_ptr) {
+  printf("record\n");
+  printf("name: '%s'\n", record_ptr->name);
+  printf(" age:  %d;\n", record_ptr->age);
 }
