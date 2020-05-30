@@ -8,73 +8,26 @@
  */
 
 /*** MODULE: OPEN ADDRESSING HASH TABLE FILE ***/
-#include "hash_table.h"
-
-/* poly_hash: */
-unsigned int poly_hash(char *s) {
-  static const unsigned x = 31;
-  unsigned int hash_value = 0;
-  for (int i = 0; s[i] != '\0'; i++) {
-    hash_value = hash_value * x + (s[i] - 'a' + 1); // % p
-  }
-  return hash_value % NUM_RECORDS; // Hash can't exceed the size of the table
-}
-/* open_table_file: */
-table_t *open_table_file() {
-  table_t *new_table = (table_t *)malloc(sizeof(table_t));
-  if ((new_table->fptr = fopen(FILE_NAME, "wb+")) == NULL) {
-    perror("ERROR fopen");
-    exit(-1);
-  }
-  new_table->size = 0;
-  new_table->capacity = NUM_RECORDS;
-  return new_table;
-}
-/* close_table_file: */
-void close_table_file(table_t *table) {
-  if (fclose(table->fptr) != 0) {
-    perror("ERROR fclose");
-    exit(-1);
-  }
-  free(table);
-}
-/* read_record: wrapper around fread */
-void read_record(table_t *table_ptr, record_t *record_ptr) {
-  if (fread(record_ptr, sizeof(record_t), 1, table_ptr->fptr) < 0) {
-    perror("ERROR fread");
-    exit(-1);
-  }
-}
-/* write_record: wrapper around fwrite */
-void write_record(table_t *table_ptr, record_t *record_ptr) {
-  if (fwrite(record_ptr, sizeof(record_t), 1, table_ptr->fptr) <= 0) {
-    perror("ERROR fwrite");
-    exit(-1);
-  }
-  table_ptr->size += 1; // If the operation was successful, increase table size
-}
-/* lookup_record: Wrapper around fseek */
-void lookup_record(table_t *table_ptr, int position) {
-  fseek(table_ptr->fptr, position * sizeof(record_t), SEEK_SET);
-}
-
+#include "p1-dogProgram.h"
 /**** MENU OPERATIONS ****/
 
+// Computes hash and calls probe function
+// int pos = search_record(table, poly_hash(new_record->name), "");
+
 /* insert_record: inserts new_record to table */
-int insert_record(table_t *table, record_t *new_record) {
-  // Computes hash and calls probe function
-  int pos = search_record(table, poly_hash(new_record->name), "");
-  if (pos >= 0) {
-    lookup_record(table, pos); // Set table pointer to the correct position
-    write_record(table, new_record); // Write record to table
-    return pos;                      // Return place where record was written/ID
+int insert_record(table_t *table, record_t *new_record, unsigned position) {
+  if (position >= 0) {
+    lookup_in_table(table, position); // Set table pointer to the right position
+    write_to_table(table, new_record); // Write record to table
+    table->size += 1;
+    return 0; // If operation was successful
   }
   return -1; // Insert failed
 }
 
 void view_record(table_t *table, record_t *temp, int id) {
-  lookup_record(table, id);
-  read_record(table, temp);
+  lookup_in_table(table, id);
+  read_from_table(table, temp);
   if (strcmp(temp->name, "") == 0) {
     printf("No hay registro con este ID");
   } else {
@@ -84,29 +37,32 @@ void view_record(table_t *table, record_t *temp, int id) {
 }
 
 void delete_record(table_t *table, record_t *temp, int id) {
-  lookup_record(table, id);
-  read_record(table, temp);
+  lookup_in_table(table, id);
+  read_from_table(table, temp);
   // Writing a null struct is equivalent to deleting it
   strcpy(temp->name, "");
   temp->age = 0;
-  write_record(table, temp);
+  write_to_table(table, temp);
+  table->size -= 1;
 }
 
+/* search_record: Performs two types of probing
+ * if name is empty, it returns the position of the first empty slot it finds
+ * if name isn't empty, it prints all the records matching the name */
 int search_record(table_t *table, int position, char *name) {
-  record_t *temp = (record_t *)malloc(sizeof(record_t)); // Allocate a struct
+  record_t *temp = allocate_record();
   int i;
   // Move over to the position where the search begins (hash value)
-  lookup_record(table, position);
+  lookup_in_table(table, position);
   // iterate over the table starting from position
   for (i = position; i < NUM_RECORDS - 1; i++) {
-    read_record(table, temp);
+    read_from_table(table, temp);
     if (strcmp(temp->name, "") == 0) { // if there's no record on the spot
       free(temp);
       return i; // We found an empty slot
     } else if (strcmp(temp->name, name) == 0) {
-      // if name coincides print ID and record
-      printf("ID: %d ", i);
-      print_record(temp);
+      printf("ID: %d ", i); // if name coincides print ID
+      print_record(temp);   // and print record
     }
   }
   free(temp);
@@ -122,7 +78,7 @@ unsigned ask_id(table_t *table) {
   return id;
 }
 
-/* ask_new_record: Reads fields from stdin and assigns it in the new_record */
+/* ask_new_record: Reads fields from stdin and assigns them to the new_record */
 void ask_new_record(record_t *new_record) {
   printf("Edit record\nname:");
   scanf("%s", new_record->name);
@@ -136,7 +92,7 @@ void str_lower_case(char *str) {
   }
 }
 
-char *ask_new_name() {
+char *ask_name() {
   char *name = malloc(sizeof(char) * 32);
   while (strcmp(name, "") == 0) { // Name cannot be empty
     printf("Escriba el nombre a buscar: ");
@@ -153,29 +109,64 @@ void print_record(record_t *record_ptr) {
   printf(" age:  %d;\n", record_ptr->age);
 }
 
+int display_menu(table_t *ht, record_t *temp) {
+  int menu_selection = -1;
+  char wait;
+
+  while (true) {
+    system("clear"); // "cls" for windows
+    printf("Veterinaria:\n1. Ingresar registro\n2. Ver registro\n"
+           "3. Borrar registro\n4. Buscar registro\n5. Salir\n"
+           "Ingrese el número de una opción: ");
+    scanf("%d", &menu_selection);
+
+    unsigned id;
+    char *name;
+    switch (menu_selection) {
+    case 1: // Ingresar registro
+      ask_new_record(temp);
+      id = search_record(ht, poly_hash(temp->name), "");
+      insert_record(ht, temp, id);
+      break;
+    case 2: // Ver registro
+      id = ask_id(ht);
+      view_record(ht, temp, id);
+      break;
+    case 3: // Borrar registro
+      id = ask_id(ht);
+      delete_record(ht, temp, id);
+      break;
+    case 4: // Buscar registro
+      name = ask_name();
+      search_record(ht, poly_hash(name), name);
+      break;
+    case 5: // Salir
+      return 0;
+      break;
+    default:
+      // printf(INPUT_WARNING);
+      printf("bad option");
+      break;
+    }
+    printf("Presione cualquier tecla para continuar.\n");
+    scanf(" %c", &wait); // works as getchar()
+  }
+}
+
 /* TEST MAIN */
 int main() {
   table_t *table = open_table_file(); // Initialize table
   generate_random_table(table);       // Fill table
-  int res;                            // Result. For error handling
+  record_t *temp = allocate_record();
 
+  // Put file pointer back at the beginning of the file
+  rewind(table->fptr);
   // Read all the records written to the file
-  record_t *temp = (record_t *)malloc(sizeof(record_t)); // Allocate a struct
-  rewind(table->fptr); // Put file pointer back at the beginning of the file
   for (int i = 0; i < NUM_RECORDS - 1; i++) {
-    read_record(table, temp);
+    read_from_table(table, temp);
     print_record(temp);
   }
-
-  // enter 'repl'
-  unsigned k;
-  char *name;
-  while (true) {
-    name = ask_new_name();
-    k = poly_hash(name);
-    search_record(table, k, name);
-  }
-
+  display_menu(table, temp);
   free(temp);
   return 0;
 }
@@ -189,7 +180,8 @@ void generate_random_table(table_t *table_ptr) {
   record_t *temp = (record_t *)malloc(sizeof(record_t));
   for (int i = 0; i < NUM_RECORDS - 1; i++) {
     generate_random_record(temp);
-    k = insert_record(table_ptr, temp);
+    k = search_record(table_ptr, poly_hash(temp->name), "");
+    insert_record(table_ptr, temp, k);
     printf("%d: %s\n", k, temp->name); // For debugging
   }
 }
