@@ -1,14 +1,10 @@
 /* TODO:
- * Collision handling (in insert)
  * Add deleted field to the struct
- * Loop back on search
- * NOTE: Do all modifications on this file. When finished:
- * Update header file
- * Keep the same file structure. It'll make the 2nd practice easier
  */
 
-/*** MODULE: OPEN ADDRESSING HASH TABLE FILE ***/
 #include "../p1-dogProgram.h"
+
+/*** OPEN ADDRESSING HASH TABLE FILE ***/
 
 int main() {
   table_t *table = open_table_file(); // Initialize table
@@ -30,6 +26,8 @@ int main() {
 int display_menu(table_t *ht, record_t *temp) {
   int menu_selection = -1;
   char wait;
+  unsigned id;
+  char *name;
 
   while (true) {
     system("clear"); // "cls" for windows
@@ -38,8 +36,6 @@ int display_menu(table_t *ht, record_t *temp) {
            "Ingrese el número de una opción: ");
     scanf("%d", &menu_selection);
 
-    unsigned id;
-    char *name;
     switch (menu_selection) {
     case 1: // Ingresar registro
       ask_new_record(temp);
@@ -72,6 +68,16 @@ int display_menu(table_t *ht, record_t *temp) {
 }
 
 /**** MENU OPERATIONS ****/
+
+/* poly_hash: Polynomial hash function for strings */
+unsigned int poly_hash(char *s) {
+  static const unsigned x = 31;
+  unsigned int hash_value = 0;
+  for (int i = 0; s[i] != '\0'; i++) {
+    hash_value = hash_value * x + (s[i] - 'a' + 1); // % p
+  }
+  return hash_value % NUM_RECORDS; // Hash can't exceed the size of the table
+}
 
 /* insert_record: inserts new_record to table */
 int insert_record(table_t *table, record_t *new_record, unsigned position) {
@@ -109,12 +115,10 @@ void delete_record(table_t *table, record_t *temp, unsigned id) {
  * if name is empty, it returns the position of the first empty slot it finds
  * if name isn't empty, it prints all the records matching the name */
 int search_record(table_t *table, unsigned position, char *name) {
-  record_t *temp = allocate_record();
-  int i;
-  // Move over to the position where the search begins (hash value)
-  lookup_in_table(table, position);
-  // iterate over the table starting from position
-  for (i = position; i < NUM_RECORDS - 1; i++) {
+  record_t *temp = allocate_record(); // Allocate a temp struct.
+  lookup_in_table(table, position);   // Move to where the search begins.
+  unsigned i, limit = NUM_RECORDS;
+  for (i = position; i < limit - 1; i++) { // iterate over the table
     read_from_table(table, temp);
     if (strcmp(temp->name, "") == 0) { // if there's no record on the spot
       free(temp);
@@ -122,6 +126,10 @@ int search_record(table_t *table, unsigned position, char *name) {
     } else if (strcmp(temp->name, name) == 0) {
       printf("ID: %d ", i); // if name coincides print ID
       print_record(temp);   // and print record
+    }
+    if (i == NUM_RECORDS - 1) { // If there's no space in the table, loop back
+      i = 0;
+      limit = position;
     }
   }
   free(temp);
