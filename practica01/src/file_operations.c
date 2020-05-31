@@ -45,7 +45,7 @@ void close_table_file(table_t *table) {
 }
 
 /* lookup_in_table: Wrapper around fseek */
-void lookup_in_table(table_t *table_ptr, int position) {
+void lookup_in_table(table_t *table_ptr, unsigned position) {
   if (fseek(table_ptr->fptr, position * sizeof(record_t), SEEK_SET) != 0) {
     perror(ERR_SEEK);
     exit(-1);

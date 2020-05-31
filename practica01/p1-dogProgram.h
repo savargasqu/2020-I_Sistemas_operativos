@@ -12,6 +12,7 @@
 typedef struct {
   char name[8];
   int age;
+  bool deleted; // If a record is deleted, but the table hasn't been resized
 } record_t;
 
 typedef struct {
@@ -20,33 +21,36 @@ typedef struct {
   unsigned capacity; // Number of records that _can_ be stored
 } table_t;
 
-/*** MODULE: OPEN ADDRESSING HASH TABLE FILE ***/
-unsigned int poly_hash(char *s);
+/**** MODULE: FILE OPERATIONS ****/
 record_t *allocate_record();
 table_t *open_table_file();
 void close_table_file(table_t *table);
 void read_from_table(table_t *table_ptr, record_t *record_ptr);
 void write_to_table(table_t *table_ptr, record_t *record_ptr);
-void lookup_in_table(table_t *table_ptr, int position);
-
+void lookup_in_table(table_t *table_ptr, unsigned position);
 
 /**** MODULE: MENU OPERATIONS ****/
 int display_menu(table_t *, record_t *);
-int insert_record(table_t *table, record_t *record, unsigned position);
-void view_record(table_t *table, record_t *temp, unsigned id);
-void delete_record(table_t *table, record_t *temp, unsigned id);
-int search_record(table_t *table, unsigned position, char *name);
 
-/* aux functions */
-void ask_new_record(record_t *new_record); // aux to insert
-void print_record(record_t *record_ptr);   // aux to view
-unsigned ask_id(table_t *table);           // aux to delete and search
-char *ask_name();
-void str_lower_case(char *str);
+unsigned poly_hash(char *s);
 
-/*** MODULE: RANDOMIZATION ***/
+int insert_record(table_t *table, record_t *record, unsigned);
+unsigned probe_table(table_t *, unsigned start_pos); // aux to insert
+void ask_new_record(record_t *new_record);            // aux to insert
+
+void view_record(table_t *table, record_t *temp, unsigned);
+void print_record(record_t *record_ptr); // aux to view
+
+void delete_record(table_t *table, record_t *temp, unsigned);
+
+void search_record_name(table_t *table, char *name, unsigned);
+char *ask_name(); // aux to search_record
+
+unsigned ask_id(table_t *table); // aux to delete and view
+void str_lower_case(char *str);  // aux to insert and ask_name/search
+
+/**** MODULE: RANDOMIZATION ****/
 void generate_random_table(table_t *table_ptr);
 int generate_random_int(int min, int max);
 char *generate_random_string(int str_len);
 void generate_random_record(record_t *record);
-

@@ -7,9 +7,9 @@ void generate_random_table(table_t *table_ptr) {
   srand(time(NULL)); // For randomization. It should only be called once
   unsigned k;
   record_t *temp = (record_t *)malloc(sizeof(record_t));
-  for (int i = 0; i < NUM_RECORDS - 1; i++) {
+  for (int i = 0; i < NUM_RECORDS; i++) {
     generate_random_record(temp);
-    k = search_record(table_ptr, poly_hash(temp->name), "");
+    k = probe_table(table_ptr, poly_hash(temp->name));
     insert_record(table_ptr, temp, k);
     printf("%d: %s\n", k, temp->name); // For debugging
   }
