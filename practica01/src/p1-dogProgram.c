@@ -130,13 +130,35 @@ void ask_new_record(dogType *dog_record) {
 
 /* view_record: */
 void view_record(table_t *table, dogType *temp, unsigned id) {
+  char selection;
   lookup_in_table(table, id);
   read_from_table(table, temp);
   if (strcmp(temp->name, "") == 0) {
     printf("No hay registro con este ID\n");
   } else {
     print_record(temp);
-    // TODO: Add text file
+    printf("Ver historia clínica?[y/n]\n");
+    scanf("%c", &selection);
+    if (selection == 'y') {
+        open_clinical_history(id); // Argument is ID
+    } else {
+      return;
+    }
+  }
+}
+
+void open_clinical_history(unsigned id) {
+  char *file_name;
+  FILE *text_file;
+  sprintf(file_name, "%u.txt", id); // File name is dog's ID
+  text_file = fopen(file_name, "w"); // Write file in binary format
+  if (text_file == NULL) {           // If pointer is NULL, fopen failed
+    perror(ERR_OPEN);
+    exit(-1);
+  } else {
+    char command[64];
+    sprintf(command, "open %s", file_name);
+    system(command);
   }
 }
 

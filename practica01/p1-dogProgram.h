@@ -5,6 +5,13 @@
 #include <string.h> // For strcpy, strlen
 #include <time.h>   // For randomization
 
+#define ERR_OPEN   "ERROR en fopen. El archivo no se pudo abrir con éxito"
+#define ERR_SEEK   "ERROR en fseek. El flujo del archivo no se ajustó con éxito"
+#define ERR_READ   "ERROR en fread. El archivo no se pudo leer con éxito"
+#define ERR_WRITE  "ERROR en fwrite. El archivo no se pudo escribir con éxito"
+#define ERR_CLOSE  "ERROR en fclose. Archivo no se pudo cerrar con éxito"
+#define ERR_MEMORY "ERROR en malloc. Falla en la alocación de memoria"
+
 #define FILE_NAME "people.dat"
 #define NUM_RECORDS 10
 
@@ -44,6 +51,7 @@ void ask_new_record(dogType *new_record);           // aux to insert
 
 void view_record(table_t *table, dogType *temp, unsigned);
 void print_record(dogType *record_ptr); // aux to view
+void open_clinical_history(unsigned id);
 
 void delete_record(table_t *table, dogType *temp, unsigned);
 

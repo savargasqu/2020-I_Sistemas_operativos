@@ -2,13 +2,6 @@
 
 /* File-level functions i.e. wrappers for system calls that handle errors */
 
-#define ERR_OPEN   "ERROR en fopen. El archivo no se pudo abrir con éxito"
-#define ERR_SEEK   "ERROR en fseek. El flujo del archivo no se ajustó con éxito"
-#define ERR_READ   "ERROR en fread. El archivo no se pudo leer con éxito"
-#define ERR_WRITE  "ERROR en fwrite. El archivo no se pudo escribir con éxito"
-#define ERR_CLOSE  "ERROR en fclose. Archivo no se pudo cerrar con éxito"
-#define ERR_MEMORY "ERROR en malloc. Falla en la alocación de memoria"
-
 /* allocate_record: Wrapper around malloc(dogType) */
 dogType *allocate_record() {
   dogType *new_record = (dogType *)malloc(sizeof(dogType));
