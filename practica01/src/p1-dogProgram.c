@@ -133,7 +133,7 @@ void view_record(table_t *table, dogType *temp, unsigned id) {
   lookup_in_table(table, id);
   read_from_table(table, temp);
   if (strcmp(temp->name, "") == 0) {
-    printf("No hay registro con este ID");
+    printf("No hay registro con este ID\n");
   } else {
     print_record(temp);
     // TODO: Add text file
@@ -157,10 +157,14 @@ void print_record(dogType *dog_ptr) {
 /* delete_record: */
 void delete_record(table_t *table, dogType *temp, unsigned id) {
   lookup_in_table(table, id);
-  read_from_table(table, temp);
   // Writing a null struct is equivalent to deleting it
   strcpy(temp->name, "");
+  strcpy(temp->species, "");
+  strcpy(temp->breed, "");
   temp->age = 0;
+  temp->height = 0;
+  temp->weight = 0;
+  temp->sex = '\0';
   temp->deleted = true;
   write_to_table(table, temp);
   table->size -= 1;
