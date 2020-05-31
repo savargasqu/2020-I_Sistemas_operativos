@@ -1,7 +1,3 @@
-/* TODO:
- * Add deleted field to the struct
- */
-
 #include "../p1-dogProgram.h"
 
 /*** OPEN ADDRESSING HASH TABLE FILE ***/
@@ -9,12 +5,12 @@
 int main() {
   table_t *table = open_table_file(); // Initialize table
   generate_random_table(table);       // Fill table
-  record_t *temp = allocate_record();
+  dogType *temp = allocate_record();
 
   // Put file pointer back at the beginning of the file
   rewind(table->fptr);
   // Read all the records written to the file
-  for (int i = 0; i < NUM_RECORDS - 1; i++) {
+  for (int i = 0; i < NUM_RECORDS; i++) {
     read_from_table(table, temp);
     print_record(temp);
   }
@@ -23,7 +19,7 @@ int main() {
   return 0;
 }
 
-int display_menu(table_t *ht, record_t *temp) {
+int display_menu(table_t *ht, dogType *temp) {
   int menu_selection = -1;
   char wait;
   unsigned id;
@@ -78,7 +74,7 @@ unsigned poly_hash(char *s) {
 /**** INSERT ****/
 
 /* insert_record: inserts new_record to table */
-int insert_record(table_t *table, record_t *new_record, unsigned position) {
+int insert_record(table_t *table, dogType *new_record, unsigned position) {
   if (position >= 0) {
     lookup_in_table(table, position); // Set table pointer to the right position
     write_to_table(table, new_record); // Write record to table
@@ -91,7 +87,7 @@ int insert_record(table_t *table, record_t *new_record, unsigned position) {
 /* probe_table: Search for an empty slot in the table */
 unsigned probe_table(table_t *table, unsigned start_pos) {
   unsigned limit = NUM_RECORDS;
-  record_t *temp = allocate_record();
+  dogType *temp = allocate_record();
   lookup_in_table(table, start_pos);
   for (unsigned i = start_pos; i < limit; i++) {
     read_from_table(table, temp);
@@ -110,18 +106,30 @@ unsigned probe_table(table_t *table, unsigned start_pos) {
 }
 
 /* ask_new_record: Reads fields from stdin and assigns them to the new_record */
-void ask_new_record(record_t *new_record) {
-  printf("Edit record\nname:");
-  scanf("%s", new_record->name);
-  str_lower_case(new_record->name);
-  printf("age:");
-  scanf("%d", &new_record->age);
+void ask_new_record(dogType *dog_record) {
+  fflush(stdin);
+  printf("Por favor ingrese los datos solicitados.\n");
+  printf("Nombre: ");
+  scanf("%s", dog_record->name);
+  str_lower_case(dog_record->name);
+  printf("Tipo: ");
+  scanf("%s", dog_record->species);
+  printf("Edad (en años): ");
+  scanf("%i", &dog_record->age);
+  printf("Raza: ");
+  scanf("%s", dog_record->breed);
+  printf("Estatura (cm): ");
+  scanf("%i", &dog_record->height);
+  printf("Peso (Kg): ");
+  scanf("%f", &dog_record->weight);
+  printf("Sexo (H/M): ");
+  scanf(" %c", &dog_record->sex);
 }
 
 /**** VIEW ****/
 
 /* view_record: */
-void view_record(table_t *table, record_t *temp, unsigned id) {
+void view_record(table_t *table, dogType *temp, unsigned id) {
   lookup_in_table(table, id);
   read_from_table(table, temp);
   if (strcmp(temp->name, "") == 0) {
@@ -133,16 +141,21 @@ void view_record(table_t *table, record_t *temp, unsigned id) {
 }
 
 /* print_record: */
-void print_record(record_t *record_ptr) {
+void print_record(dogType *dog_ptr) {
   printf("record\n");
-  printf("name: '%s'\n", record_ptr->name);
-  printf(" age:  %d;\n", record_ptr->age);
+  printf("Nombre: %s\n", dog_ptr->name);
+  printf("  Tipo: %s\n", dog_ptr->species);
+  printf("  Edad: %i\n", dog_ptr->age);
+  printf("  Raza: %s\n", dog_ptr->breed);
+  printf("Altura: %i\n", dog_ptr->height);
+  printf("  Peso: %.3f\n", dog_ptr->weight);
+  printf("  Sexo: %c\n", dog_ptr->sex);
 }
 
 /**** DELETE ****/
 
 /* delete_record: */
-void delete_record(table_t *table, record_t *temp, unsigned id) {
+void delete_record(table_t *table, dogType *temp, unsigned id) {
   lookup_in_table(table, id);
   read_from_table(table, temp);
   // Writing a null struct is equivalent to deleting it
@@ -158,7 +171,7 @@ void delete_record(table_t *table, record_t *temp, unsigned id) {
 /* search_record_name: Search all records with a matching name */
 void search_record_name(table_t *table, char *name, unsigned start_pos) {
   unsigned limit = NUM_RECORDS;
-  record_t *temp = allocate_record();
+  dogType *temp = allocate_record();
   lookup_in_table(table, start_pos);
   for (unsigned i = start_pos; i < limit; i++) {
     read_from_table(table, temp);

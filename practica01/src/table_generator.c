@@ -6,7 +6,7 @@
 void generate_random_table(table_t *table_ptr) {
   srand(time(NULL)); // For randomization. It should only be called once
   unsigned k;
-  record_t *temp = (record_t *)malloc(sizeof(record_t));
+  dogType *temp = (dogType *)malloc(sizeof(dogType));
   for (int i = 0; i < NUM_RECORDS; i++) {
     generate_random_record(temp);
     k = probe_table(table_ptr, poly_hash(temp->name));
@@ -15,10 +15,16 @@ void generate_random_table(table_t *table_ptr) {
   }
 }
 
+
 /* generate_random_record: */
-void generate_random_record(record_t *record) {
-  strcpy(record->name, generate_random_string(8));
-  record->age = generate_random_int(1, 100);
+void generate_random_record(dogType *dog_ptr) {
+  strcpy(dog_ptr->name, generate_random_string(32));
+  strcpy(dog_ptr->species, generate_random_string(32));
+  strcpy(dog_ptr->breed, generate_random_string(16));
+  dog_ptr->age = generate_random_int(1, 100);
+  dog_ptr->height = generate_random_int(1, 100);
+  dog_ptr->weight = generate_random_float(100);
+  dog_ptr->sex = generate_random_gender();
 }
 
 /* generate_random_int: */
@@ -38,7 +44,6 @@ char *generate_random_string(int str_len) {
   return rstr;
 }
 
-//----------------------------------------
 float generate_random_float(float max) {
   return ((float)rand() / (float)(RAND_MAX)) * max;
 }
@@ -49,19 +54,3 @@ char generate_random_gender() {
   }
   return 'M';
 }
-
-/*
-dogType generate_dog() {
-  dogType *dog_ptr = allocate_record();
-  strcpy(dog_ptr->name, generate_random_string(32));
-  strcpy(dog_ptr->species, generate_random_string(32));
-  strcpy(dog_ptr->breed, generate_random_string(16));
-  dog_ptr->age = generate_random_int(1, 100);
-  dog_ptr->height = generate_random_int(1, 100);
-  dog_ptr->weight = generate_random_float(100);
-  dog_ptr->sex = generate_random_gender();
-  //dog_ptr->ID = 0; // This isn't valid any more
-
-  return *dog_ptr;
-}
-*/

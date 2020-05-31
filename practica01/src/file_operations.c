@@ -9,9 +9,9 @@
 #define ERR_CLOSE  "ERROR en fclose. Archivo no se pudo cerrar con éxito"
 #define ERR_MEMORY "ERROR en malloc. Falla en la alocación de memoria"
 
-/* allocate_record: Wrapper around malloc(record_t) */
-record_t *allocate_record() {
-  record_t *new_record = (record_t *)malloc(sizeof(record_t));
+/* allocate_record: Wrapper around malloc(dogType) */
+dogType *allocate_record() {
+  dogType *new_record = (dogType *)malloc(sizeof(dogType));
   if (new_record == NULL) {
     perror(ERR_MEMORY);
     exit(-1);
@@ -46,23 +46,23 @@ void close_table_file(table_t *table) {
 
 /* lookup_in_table: Wrapper around fseek */
 void lookup_in_table(table_t *table_ptr, unsigned position) {
-  if (fseek(table_ptr->fptr, position * sizeof(record_t), SEEK_SET) != 0) {
+  if (fseek(table_ptr->fptr, position * sizeof(dogType), SEEK_SET) != 0) {
     perror(ERR_SEEK);
     exit(-1);
   }
 }
 
 /* read_from_table: Wrapper around fread */
-void read_from_table(table_t *table_ptr, record_t *record_ptr) {
-  if (fread(record_ptr, sizeof(record_t), 1, table_ptr->fptr) < 0) {
+void read_from_table(table_t *table_ptr, dogType *record_ptr) {
+  if (fread(record_ptr, sizeof(dogType), 1, table_ptr->fptr) < 0) {
     perror(ERR_READ);
     exit(-1);
   }
 }
 
 /* write_to_table: Wrapper around fwrite */
-void write_to_table(table_t *table_ptr, record_t *record_ptr) {
-  if (fwrite(record_ptr, sizeof(record_t), 1, table_ptr->fptr) <= 0) {
+void write_to_table(table_t *table_ptr, dogType *record_ptr) {
+  if (fwrite(record_ptr, sizeof(dogType), 1, table_ptr->fptr) <= 0) {
     perror(ERR_WRITE);
     exit(-1);
   }
