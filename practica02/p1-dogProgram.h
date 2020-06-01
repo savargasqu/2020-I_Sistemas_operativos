@@ -1,19 +1,20 @@
 #include <ctype.h> // for tolower(char)
+#include <pthread.h> // Multiple threads for different clients
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h> // For strcpy, strlen
 #include <time.h>   // For randomization
 
-#define ERR_OPEN   "ERROR en fopen. El archivo no se pudo abrir con éxito"
-#define ERR_SEEK   "ERROR en fseek. El flujo del archivo no se ajustó con éxito"
-#define ERR_READ   "ERROR en fread. El archivo no se pudo leer con éxito"
-#define ERR_WRITE  "ERROR en fwrite. El archivo no se pudo escribir con éxito"
-#define ERR_CLOSE  "ERROR en fclose. Archivo no se pudo cerrar con éxito"
+#define ERR_OPEN "ERROR en fopen. El archivo no se pudo abrir con éxito"
+#define ERR_SEEK "ERROR en fseek. El flujo del archivo no se ajustó con éxito"
+#define ERR_READ "ERROR en fread. El archivo no se pudo leer con éxito"
+#define ERR_WRITE "ERROR en fwrite. El archivo no se pudo escribir con éxito"
+#define ERR_CLOSE "ERROR en fclose. Archivo no se pudo cerrar con éxito"
 #define ERR_MEMORY "ERROR en malloc. Falla en la alocación de memoria"
 
-#define FILE_NAME "people.dat"
-#define NUM_RECORDS 10
+#define FILE_NAME "dataDogs.dat"
+#define NUM_RECORDS 117
 
 typedef struct {
   char name[32];    // nombre
@@ -41,13 +42,13 @@ void write_to_table(table_t *table_ptr, dogType *record_ptr);
 void lookup_in_table(table_t *table_ptr, unsigned position);
 
 /**** MODULE: MENU OPERATIONS ****/
-int display_menu(table_t *, dogType *);
+void display_menu(table_t *);
 
 unsigned poly_hash(char *s);
 
 int insert_record(table_t *table, dogType *record, unsigned);
 unsigned probe_table(table_t *, unsigned start_pos); // aux to insert
-void ask_new_record(dogType *new_record);           // aux to insert
+void ask_new_record(dogType *new_record);            // aux to insert
 
 void view_record(table_t *table, dogType *temp, unsigned);
 void print_record(dogType *record_ptr, unsigned id); // aux to view
