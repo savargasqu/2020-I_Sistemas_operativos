@@ -5,5 +5,5 @@ bin/
 *.o
 *.out
 *.dat
-practica01/p1-dogProgram
-practica01/struct_generator
+*/p1-dogProgram
+*/struct_generator
