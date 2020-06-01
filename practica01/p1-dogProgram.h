@@ -50,7 +50,7 @@ unsigned probe_table(table_t *, unsigned start_pos); // aux to insert
 void ask_new_record(dogType *new_record);           // aux to insert
 
 void view_record(table_t *table, dogType *temp, unsigned);
-void print_record(dogType *record_ptr); // aux to view
+void print_record(dogType *record_ptr, unsigned id); // aux to view
 void open_clinical_history(unsigned id);
 
 void delete_record(table_t *table, dogType *temp, unsigned);

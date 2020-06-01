@@ -12,7 +12,7 @@ int main() {
   // Read all the records written to the file
   for (int i = 0; i < NUM_RECORDS; i++) {
     read_from_table(table, temp);
-    print_record(temp);
+    print_record(temp, i);
   }
   display_menu(table, temp);
   free(temp);
@@ -136,7 +136,7 @@ void view_record(table_t *table, dogType *temp, unsigned id) {
   if (strcmp(temp->name, "") == 0) {
     printf("No hay registro con este ID\n");
   } else {
-    print_record(temp);
+    print_record(temp, id);
     printf("Ver historia clínica?[y/n]\n");
     scanf("%c", &selection);
     if (selection == 'y') {
@@ -161,8 +161,8 @@ void open_clinical_history(unsigned id) {
 }
 
 /* print_record: */
-void print_record(dogType *dog_ptr) {
-  printf("record\n");
+void print_record(dogType *dog_ptr, unsigned id) {
+  printf("record %u\n", id);
   printf("Nombre: %s\n", dog_ptr->name);
   printf("  Tipo: %s\n", dog_ptr->species);
   printf("  Edad: %i\n", dog_ptr->age);
@@ -201,7 +201,7 @@ void search_record_name(table_t *table, char *name, unsigned start_pos) {
     read_from_table(table, temp);
     if (strcmp(temp->name, name) == 0) {
       // If a match is found, print it
-      print_record(temp);
+      print_record(temp, i);
     } else if ((strcmp(temp->name, "") == 0) && (temp->deleted == false)) {
       // If a field that has never been initialized is found, stop the search
       break;
