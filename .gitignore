@@ -1,9 +1,14 @@
-books
+# Ignore lsp and personal notes
 .ccls
+*/draft.md
 *.pdf
-bin/
+books
+# Ignore object and binary files
 *.o
 *.out
 *.dat
+*/bin
 */p1-dogProgram
+*/p2-dogServer
+*/p2-dogClient
 */struct_generator
