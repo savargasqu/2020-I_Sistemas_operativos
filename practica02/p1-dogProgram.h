@@ -14,6 +14,7 @@
 #define ERR_MEMORY "ERROR en malloc. Falla en la alocación de memoria"
 
 #define FILE_NAME "dataDogs.dat"
+#define LOG_FILE_NAME "serverDogs.log"
 #define NUM_RECORDS 117
 
 typedef struct {

@@ -1,25 +1,42 @@
 #include "../p1-dogProgram.h"
 
+#define NUM_THREADS 5
+#define ERR_THREAD "Error en pthread_create. No se pudo crear un hilo con éxito"
+
 /*** OPEN ADDRESSING HASH TABLE FILE ***/
 
 int main() {
   table_t *table = open_table_file(); // Initialize table
   generate_random_table(table);       // Fill table
-  dogType *temp = allocate_record();
 
-  // Put file pointer back at the beginning of the file
-  rewind(table->fptr);
-  // Read all the records written to the file
-  for (int i = 0; i < NUM_RECORDS; i++) {
-    read_from_table(table, temp);
-    print_record(temp, i);
+  //// Put file pointer back at the beginning of the file
+  // rewind(table->fptr);
+  //// Read all the records written to the file
+  // for (int i = 0; i < NUM_RECORDS; i++) {
+  //  read_from_table(table, temp);
+  //  print_record(temp, i);
+  //}
+
+  pthread_t thread[NUM_THREADS]; // Array of threads
+  int res, i = 0;
+  while (true) {
+    if (i <
+        NUM_THREADS) { //&& signal) { -- wait for client signal to create new
+      if (pthread_create(&thread[i], NULL, (void *)display_menu, table) != 0) {
+        perror(ERR_THREAD);
+        exit(-1);
+      } else {
+        pthread_join(thread[i], (void **)&res);
+        i++;
+      }
+    }
   }
-  display_menu(table, temp);
-  free(temp);
+  printf("back to main");
   return 0;
 }
 
-int display_menu(table_t *ht, dogType *temp) {
+void display_menu(table_t *ht) {
+  dogType *temp = allocate_record();
   int menu_selection = -1;
   char wait;
   unsigned id;
@@ -49,7 +66,8 @@ int display_menu(table_t *ht, dogType *temp) {
       search_record_name(ht, name, poly_hash(name));
       break;
     case 5: // Salir
-      return 0;
+      free(temp);
+      return;
       break;
     default:
       // printf(INPUT_WARNING);
