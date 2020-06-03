@@ -1,30 +1,32 @@
-#include "../p1-dogProgram.h"
+#include "../include/p2-shared.h"
+#include "../include/p2-dogServer.h"
+#include "../include/p2-dogClient.h"
 
 /* Randomization module. Functions that generate different random data types */
 
 /* generate_random_table: Takes a table and fills it with random records */
-void generate_random_table(table_t *table_ptr) {
+void generate_random_table(table_t *p_table) {
   srand(time(NULL)); // For randomization. It should only be called once
   unsigned k;
   dogType *temp = (dogType *)malloc(sizeof(dogType));
   for (int i = 0; i < NUM_RECORDS; i++) {
     generate_random_record(temp);
-    k = probe_table(table_ptr, poly_hash(temp->name));
-    insert_record(table_ptr, temp, k);
+    k = probe_table(p_table, poly_hash(temp->name));
+    insert_record(p_table, temp, k);
     printf("%d: %s\n", k, temp->name); // For debugging
   }
 }
 
 
 /* generate_random_record: */
-void generate_random_record(dogType *dog_ptr) {
-  strcpy(dog_ptr->name, generate_random_string(32));
-  strcpy(dog_ptr->species, generate_random_string(32));
-  strcpy(dog_ptr->breed, generate_random_string(16));
-  dog_ptr->age = generate_random_int(1, 100);
-  dog_ptr->height = generate_random_int(1, 100);
-  dog_ptr->weight = generate_random_float(100);
-  dog_ptr->sex = generate_random_gender();
+void generate_random_record(dogType *p_dog) {
+  strcpy(p_dog->name, generate_random_string(32));
+  strcpy(p_dog->species, generate_random_string(32));
+  strcpy(p_dog->breed, generate_random_string(16));
+  p_dog->age = generate_random_int(1, 100);
+  p_dog->height = generate_random_int(1, 100);
+  p_dog->weight = generate_random_float(100);
+  p_dog->sex = generate_random_gender();
 }
 
 /* generate_random_int: */
