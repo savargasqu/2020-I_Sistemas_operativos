@@ -1,14 +1,15 @@
 # Práctica 2
 
-**Sistemas Operativos (Grupo 1) 2020-I**
-
-**Universidad Nacional de Colombia**
-
 Juan Pablo Gutiérrez
 `jgutierrezre@unal.edu.co`
 
 Sergio Alejandro Vargas
 `savargasqu@unal.edu.co`
+
+**Sistemas Operativos
+2016707-1\
+2020-I\
+Universidad Nacional de Colombia**
 
 
 Implementación de:

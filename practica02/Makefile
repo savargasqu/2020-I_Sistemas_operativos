@@ -1,12 +1,16 @@
 CC=clang # Para BSD
 #CC=gcc # Para GNU/LINUX
 CFLAGS=-I.
-SRCDIR=src
-DEPS=p1-dogProgram.h
+SRC_SERV=src_server
+SRC_CLI=src_client
+DEPS=p2-shared.h
 
-p1-dogProgram: $(SRCDIR)/*
-	$(CC) -o $@ $^ $(CFLAGS)
+make: p2-dogServer p2-dogClient
 
-#table_generator: $(SRCDIR)
-#	$(CC) -o $@ $^ $(CFLAGS)
+
+p2-dogServer: src/p2-dogServer.c src/p2-shared.c src/file_operations.c src/table_generator.c
+	$(CC) -o $@ -I include/
+
+p2-dogClient: src/p2-dogClient.c src/p2-shared.c
+	$(CC) -o $@ -I include/
 
