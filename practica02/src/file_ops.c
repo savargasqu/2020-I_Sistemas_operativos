@@ -1,6 +1,6 @@
-#include "../include/p2-shared.h"
+#include "p2-shared.h"
 
-/* File-level functions i.e. wrappers for system calls that handle errors */
+/* File-level functions i.e. wrappers for file system calls */
 
 /* open_table_file: Wrapper around malloc(table_t) and fopen */
 table_t *open_table_file() {
@@ -44,16 +44,13 @@ void write_to_table(table_t *table_ptr, dogType *record_ptr) {
     handle_error("write");
 }
 
-
 /* Log operations */
 
 FILE *open_log() {
   FILE *log_ptr;
   if ((log_ptr = fopen(LOG_FILE, "a")) == NULL)
     handle_error("read");
-
   return log_ptr;
-
 }
 
 void close_log(FILE *log_ptr) {
@@ -62,24 +59,25 @@ void close_log(FILE *log_ptr) {
 }
 
 // [TIME] [IP] [OPERATION] [ID/NAME]
-void write_to_log(FILE *log_ptr, char *operation, char *name, unsigned id, unsigned IP) {
+void write_to_log(FILE *log_ptr, char *operation, char *name, unsigned id,
+                  unsigned IP) {
   time_t timestamp;
   struct tm *time_struct;
   char time_buf[18];
   char log_entry[80];
 
   // Format time
-  time(&timestamp); // Place epoch time in timestamp
+  time(&timestamp);                    // Place epoch time in timestamp
   time_struct = localtime(&timestamp); // Turn epoch time in human-readable time
   strftime(time_buf, 18, "[%Y%m%dT%H%M%S] ", time_struct); // [YYYYMMDDTHHMMSS]
 
   // Format the rest
   if (strcmp(name, "") == 0) {
-    sprintf(log_entry, "[%s] [%u] [%s] [%u]", time_buf, IP, operation, id); 
+    sprintf(log_entry, "[%s] [%u] [%s] [%u]", time_buf, IP, operation, id);
   } else {
-    sprintf(log_entry, "[%s] [%u] [%s] [%s]", time_buf, IP, operation, name); 
+    sprintf(log_entry, "[%s] [%u] [%s] [%s]", time_buf, IP, operation, name);
   }
 
-  if (fwrite(log_entry, sizeof(char)*80, 1, log_ptr) <= 0)
+  if (fwrite(log_entry, sizeof(char) * 80, 1, log_ptr) <= 0)
     handle_error("write");
 }

@@ -1,7 +1,7 @@
-#include "../include/p2-shared.h"
+#include "practica02.h"
 
-void handle_error(char* func_name) {
-  perror(sprintf("\n--> Error in %s", func_name));
+void handle_error(char *fn_name) {
+  perror(sprintf("\n--> Error in %s", fn_name));
   exit(-1);
 }
 
@@ -14,19 +14,48 @@ dogType *allocate_record() {
   return new_record;
 }
 
-void send_record(int clientfd, dogType *p_dog) {
-  if (send(clientfd, p_dog, sizeof(dogType), 0) < 0)
+void send_record(int socketfd, dogType *p_dog) {
+  if (send(socketfd, p_dog, sizeof(dogType), 0) < 0)
     handle_error("send");
 }
 
-void recv_record(int socketfd, dogType *temp) {
-  if (recv(socketfd, temp, sizeof(dogType), 0) < 0)
+void recv_record(int socketfd, dogType *p_dog) {
+  if (recv(socketfd, p_dog, sizeof(dogType), 0) < 0)
     handle_error("recv");
 }
 
+void send_id(int clientfd, unsigned id) {
+  if (send(clientfd, &id, sizeof(unsigned), 0) < 0)
+    handle_error("send");
+}
+
+unsigned recv_id(int socketfd) {
+  unsigned id;
+  if (recv(socketfd, &id, sizeof(unsigned), 0) < 0)
+    handle_error("recv");
+  return id;
+}
+
+void send_name(int socketfd) {
+  char *name = ask_name();
+  if (send(socketfd, name, sizeof(char) * 32, 0) < 0)
+    handle_error("send");
+  free(name);
+}
+
+char *recv_name(int socketfd) {
+  char *name = malloc(sizeof(char) * 32);
+  if (recv(socketfd, name, sizeof(char) * 32, 0) < 0)
+    handle_error("recv");
+  return name;
+}
+
+
 /* relay_file_contents: Write the contents from inputfd to outputfd */
-void relay_file_contents(int inputfd, int outputfd, char *buffer) {
-  while (1) {
+void relay_file_contents(int inputfd, int outputfd) {
+  char *buffer = (char *)malloc(sizeof(char) * 512);
+  // char buffer[512] = ""; // todo: Make size define
+  while (true) {
     // Read data into buffer. We may not have enough to fill up buffer, so we
     // store how many bytes were actually read in bytes_read.
     int bytes_read = read(inputfd, buffer, sizeof(buffer));
@@ -36,7 +65,7 @@ void relay_file_contents(int inputfd, int outputfd, char *buffer) {
       handle_error("read");
     }
 
-    // You need a loop for the write, because not all of the data may be
+    // Loop for the write, because not all of the data may be
     // written in one call; write will return how many bytes were written. p
     // keeps track of where in the buffer we are, while we decrement
     // bytes_read to keep track of how many bytes are left to write.
@@ -51,4 +80,3 @@ void relay_file_contents(int inputfd, int outputfd, char *buffer) {
     }
   }
 }
-

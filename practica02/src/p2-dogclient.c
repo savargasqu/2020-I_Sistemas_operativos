@@ -1,4 +1,4 @@
-#include "../include/p2-dogClient.h"
+#include "practica02.h"
 
 int main() {
   int clientfd, r;
@@ -30,13 +30,12 @@ int main() {
     handle_error("close");
 }
 
-/**** MODULE: CLIENT SIDE NETWORK FUNCTIONS ****/
+/**** CLIENT SIDE ****/
 
 void cli_menu(int clientfd) {
   int id, menu_selection = -1;
   char wait;
-  dogType *temp_dog = allocate_record();
-  while (1) {
+  while (true) {
     system("clear");
     printf("Veterinaria:\n1. Ingresar registro\n2. Ver registro\n"
            "3. Borrar registro\n4. Buscar registro\n5. Salir\n"
@@ -45,76 +44,79 @@ void cli_menu(int clientfd) {
     scanf("%d", &menu_selection);
     // Tell the server what kind of operation is going to be performed
     send(clientfd, &menu_selection, sizeof(int), 0);
-
     switch (menu_selection) {
-    case 1:                            // Ingresar registro
-      ask_new_record(temp_dog);        // Fill dogType info
-      send_record(clientfd, temp_dog); // Send dogType
+    case 1: // Ingresar registro
+      cli_insert(clientfd);
       break;
-
     case 2: // Ver registro
-      // request_record only returns ID if record exists
-      if ((id = request_record(clientfd, temp_dog)) == -1)
-        break;
-      cli_view(clientfd, temp_dog, id);
+      cli_view(clientfd);
       break;
-
     case 3: // Borrar registro
-      if ((id = request_record(clientfd, temp_dog)) == -1)
-        break;
-      send_id(clientfd, id); // Send ID of record to be deleted
+      cli_delete(clientfd);
       break;
-
     case 4: // Buscar registro
-      send_name(clientfd); // Ask the user for a name and send it to the server
-      cli_search(clientfd, temp_dog); // Print responses
+      cli_search(clientfd);
       break;
-
     case 5: // Salir
       return;
-      break;
-
     default:
       printf(INPUT_WARNING);
       break;
     }
-    cli_confirm_operation(clientfd);
+    cli_confirm_op(clientfd);
     printf("Presione cualquier tecla para continuar.\n");
     scanf(" %c", &wait);
   }
 }
 
-void cli_view(int socketfd, dogType *temp, int id) {
-  char ans;
-  print_record(temp, id);
-  while (1) {
-    printf("Abrir historial médico? [Y/n]\n");
-    scanf(" %c", &ans);
-    // Let the server know whether the file will be opened or not
-    if (ans == 'Y' || ans == 'y') {
-      ans = 'y';
-      if (send(socketfd, &ans, sizeof(char), 0) < 0)
-        handle_error("client.send");
-      display_medical_hist(socketfd, id);
-    } else if (ans == 'N' || ans == 'n') {
-      if (send(socketfd, &ans, sizeof(char), 0) < 0)
-        handle_error("client.send");
-      break;
-    } else {
-      printf(INPUT_WARNING);
-    } // end if: question
-  }   // end while
+void cli_insert(int socketfd) {
+  dogType *temp = allocate_record();
+  ask_new_record(temp);
+  send_record(socketfd, temp);
+  free(temp);
 }
 
-void cli_search(int socketfd, dogType *temp) {
+void cli_view(int socketfd) {
+  int table_size, id;
+  bool ok = false;
+  dogType *temp = allocate_record();
+  table_size = recv_id(socketfd); // We can use recv_id to get table_size
+  id = ask_id(table_size);
+  send_id(socketfd, id);
+  recv_record(socketfd, temp);
+  // If a record was found
+  if (temp != NULL) {
+    print_record(temp, id);
+    ok = ask_open_hist();
+    // Let the server know whether the file will be opened or not
+    send(socketfd, &ok, sizeof(bool), 0);
+    if (ok) {
+      open_medical_hist(socketfd, id);
+    }
+  } else {
+    send(socketfd, &ok, sizeof(bool), 0);
+    printf("No se encontró ningún registro");
+  } // end if
+  free(temp);
+}
+
+void cli_delete(int socketfd) {
+  int table_size, id;
+  dogType *temp = allocate_record();
+  // recv_id takes an unsigned, so we can also use it to get the table size
+  table_size = recv_id(socketfd);
+  id = ask_id(table_size);
+  send_id(socketfd, id);
+  free(temp);
+}
+
+void cli_search(int socketfd) {
   int id;
-  while (1) { // Print until there aren't any more structs being send
-    if (recv(socketfd, temp, sizeof(dogType), 0) < 0)
-      handle_error("client.recv");
-
-    if (recv(socketfd, &id, sizeof(unsigned), 0) < 0)
-      handle_error("client.recv");
-
+  dogType *temp = allocate_record();
+  send_name(socketfd); // Ask the user for a name and send it to the server.
+  while (true) {       // Print until there aren't any more records being send
+    recv_record(socketfd, temp);
+    recv_id(socketfd);
     if (temp == NULL) {
       break;
     } else {
@@ -123,58 +125,37 @@ void cli_search(int socketfd, dogType *temp) {
   }   // end while
 }
 
-void cli_confirm_operation(int socketfd) {
-  int res;
-  if (recv(socketfd, &res, sizeof(int), 0) < 0)
-    handle_error("client.recv");
-  if (res < 0) {
-    printf("Operation failed!");
-  }
-}
+//void cli_confirm_op(int socketfd) {
+//  bool ok;
+//  if (recv(socketfd, &ok, sizeof(bool), 0) < 0)
+//    handle_error("client.recv");
+//  if (!ok) {
+//    printf("Operation failed!");
+//  }
+//}
 
-/**** AUXILIARY FUNCTIONS ****/
+/**** AUXILIARY AND I/O FUNCTIONS ****/
 
-/* request_record: Requests the table size, calls ask_id,
- * and then requests a dogType record.
- * If the requested record is valid, it returns its id.
- * aux to cli_view and cli_delete */
-int request_record(int socketfd, dogType *p_dog) {
-  unsigned table_size, id;
-  // Get table size
-  if (recv(socketfd, &table_size, sizeof(int), 0) < 0)
-    handle_error("client.recv");
-  // Request dog by ID
-  id = ask_id(table_size);
-  send(socketfd, &id, sizeof(int), 0);
-  // Receive dog
-  if (recv(socketfd, p_dog, sizeof(dogType), 0) < 0)
-    handle_error("client.recv");
-  // Validate dog
-  if (p_dog == NULL) {
-    printf("No record with ID %u was found\n", id);
-    return -1;
-  }
-  return id;
-}
-
-void send_id(int socketfd, unsigned id) {
-  if (send(socketfd, &id, sizeof(unsigned), 0) < 0)
-    handle_error("send");
-}
-
-/* send_name: Call ask_name and send result through socket
- * aux to cli_search */
-void send_name(int socketfd) {
-  char *name = ask_name();
-  if (send(socketfd, name, sizeof(char) * 32, 0) < 0)
-    handle_error("send");
-  free(name);
+/* ask_open_hist: Ask user (for a char) and returns a bool
+ * aux to view_record */
+bool ask_open_hist(int socketfd, unsigned id) {
+  char ans = '\0';
+  while (true) {
+    printf("\nAbrir historial médico? [Y/n] ");
+    scanf(" %c", &ans);
+    if (ans == 'Y' || ans == 'y') {
+      return true;
+    } else if (ans == 'N' || ans == 'n') {
+      return false;
+    } else {
+      printf(INPUT_WARNING);
+    } // end if: question
+  }   // end while
 }
 
 /* display_medical_hist: Request a file and open it in a text editor
  * aux to view_record */
-void display_medical_hist(int socketfd, unsigned id) {
-  char *buff = (char *)malloc(sizeof(char) * 512);
+void open_medical_hist(int socketfd, unsigned id) {
   int confirm = 1; // Confirm editor was closed and file can be sent back
   // Temporary text file the user edits locally before sending it to the server
   char file_name[16];
@@ -184,27 +165,24 @@ void display_medical_hist(int socketfd, unsigned id) {
   if ((temp_file = fopen(file_name, "w+")) == NULL)
     handle_error("fopen");
   // Get data from socket: socket => buffer => file
-  relay_file_contents(socketfd, fileno(temp_file), buff);
+  relay_file_contents(socketfd, fileno(temp_file));
   // Open file in text editor
   system(sprintf("nano %s", id));
   // After file is edited, send signal to server to resume communications
   if (send(socketfd, &confirm, sizeof(int), 0) < 0)
     handle_error("client.send");
   // Write updated data back to socket: file => buffer => socket
-  relay_file_contents(fileno(temp_file), socketfd, buff);
+  relay_file_contents(fileno(temp_file), socketfd);
   // Close file
   if (fclose(temp_file) != 0)
     handle_error("fclose");
-  free(buff);
 }
-
-/**** USER INPUT FUNCTIONS ****/
 
 /* ask_id: Prints the size of the table and reads an integer from stdin */
 unsigned ask_id(unsigned table_size) {
   unsigned id;
   printf("La tabla tiene %u registros\n", table_size);
-  while (1) {
+  while (true) {
     printf("Ingrese el ID de un registro: ");
     scanf("%u", &id);
     if (id >= 0 && id <= NUM_RECORDS) {
@@ -231,13 +209,14 @@ char *ask_name() {
   return name;
 }
 
-/* ask_new_record: Reads fields from stdin and assigns them to a new_record */
+/* ask_new_record: Reads fields from stdin and assigns them to a new_record
+ * aux to insert_record */
 void ask_new_record(dogType *dog_record) {
   fflush(stdin);
   printf("Por favor ingrese los datos solicitados.\n");
   printf("Nombre: ");
   scanf("%s", dog_record->name);
-  str_lower_case(dog_record->name);
+  str_upper_case(dog_record->name);
   printf("Tipo: ");
   scanf("%s", dog_record->species);
   printf("Edad (en años): ");
@@ -252,13 +231,13 @@ void ask_new_record(dogType *dog_record) {
   scanf(" %c", &dog_record->sex);
 }
 
-void str_lower_case(char *str) {
+/* str_upper_case: aux to ask_new_record */
+void str_upper_case(char *str) {
   for (int i = 0; str[i]; i++) {
-    str[i] = tolower(str[i]);
+    str[i] = toupper(str[i]);
   }
 }
 
-/* print_record: */
 void print_record(dogType *dog_ptr, unsigned id) {
   printf("record %u\n", id);
   printf("Nombre: %s\n", dog_ptr->name);
