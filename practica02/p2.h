@@ -15,8 +15,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-// TODO: Write log function signatures
-
 // TODO fix this
 // NETWORKING (SHARED)
 #define MAX 256
@@ -49,15 +47,14 @@ typedef struct {
 
 /* MODULE:
  * SHARED FUNCTIONS */
-dogType *allocate_record(); // Wrapper
 void handle_error(char *);  // Generic error handling.
+dogType *allocate_record(); // Wrapper
 void send_record(int fd, dogType *);
 void recv_record(int fd, dogType *);
 void send_id(int fd, unsigned);
 unsigned recv_id(int fd);
 void send_name(int fd);
 char *recv_name(int fd);
-
 // Send/receive a file through a socket
 void relay_file_contents(int inputfd, int outputfd);
 
@@ -82,7 +79,6 @@ bool insert_record(table_t *, dogType *, unsigned);
 unsigned probe_table(table_t *, unsigned);
 bool view_record(table_t *, dogType *, unsigned);
 void delete_record(table_t *, dogType *, unsigned);
-// TODO: reestructure search
 
 /* MODULE:
  * CLIENT SIDE */
@@ -111,6 +107,7 @@ void close_table_file(table_t *table);
 void read_from_table(table_t *table_ptr, dogType *record_ptr);
 void write_to_table(table_t *table_ptr, dogType *record_ptr);
 void lookup_in_table(table_t *table_ptr, unsigned position);
+// TODO: Finish log operations
 
 /* MODULE:
  * RANDOM STRUCTS GENERATOR */

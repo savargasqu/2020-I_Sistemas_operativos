@@ -1,4 +1,4 @@
-#include "practica02.h"
+#include "../p2.h"
 
 int main() {
   int clientfd, r;

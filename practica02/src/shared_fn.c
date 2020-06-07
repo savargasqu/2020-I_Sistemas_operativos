@@ -1,4 +1,4 @@
-#include "practica02.h"
+#include "../p2.h"
 
 void handle_error(char *fn_name) {
   perror(sprintf("\n--> Error in %s", fn_name));

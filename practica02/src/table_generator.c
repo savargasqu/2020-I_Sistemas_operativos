@@ -1,8 +1,4 @@
-#include "../include/p2-shared.h"
-#include "../include/p2-dogServer.h"
-#include "../include/p2-dogClient.h"
-
-/* Randomization module. Functions that generate different random data types */
+#include "../p2.h"
 
 /* generate_random_table: Takes a table and fills it with random records */
 void generate_random_table(table_t *p_table) {
@@ -16,7 +12,6 @@ void generate_random_table(table_t *p_table) {
     printf("%d: %s\n", k, temp->name); // For debugging
   }
 }
-
 
 /* generate_random_record: */
 void generate_random_record(dogType *p_dog) {

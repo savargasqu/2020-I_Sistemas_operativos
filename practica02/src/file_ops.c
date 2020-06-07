@@ -1,4 +1,4 @@
-#include "p2-shared.h"
+#include "../p2.h"
 
 /* File-level functions i.e. wrappers for file system calls */
 

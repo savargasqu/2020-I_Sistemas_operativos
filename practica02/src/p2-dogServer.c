@@ -1,4 +1,4 @@
-#include "practica02.h"
+#include "../p2.h"
 #define BACKLOG 2
 #define NUM_THREADS 32
 
