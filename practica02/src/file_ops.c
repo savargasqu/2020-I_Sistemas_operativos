@@ -31,7 +31,6 @@ void close_table_file(table_t *table) {
   //  handle_error("write");
   if (fclose(table->fptr) != 0)
     handle_error("fclose");
-
   free(table);
 }
 
@@ -88,7 +87,7 @@ void write_to_log(FILE *p_log, char *op, char *name, unsigned id, char *IP) {
   } else {
     sprintf(log_entry, "[%s] [%s] [%s] [%u]\n", time_buf, IP, op, id);
   }
-  printf("LOG: %s", log_entry); // For debugging
+  //printf("LOG: %s", log_entry); // For debugging
   if (fputs(log_entry, p_log) <= 0)
     handle_error("write");
 }

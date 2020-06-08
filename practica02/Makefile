@@ -5,10 +5,10 @@ DEPS=p2.h
 
 make: p2-dogClient p2-dogServer #table_generator
 
-client: obj/p2-dogClient.o obj/shared_fn.o
+p2-dogClient: obj/p2-dogClient.o obj/shared_fn.o
 	$(CC) $^ -o $@
 
-server: obj/p2-dogServer.o obj/shared_fn.o obj/table_ops.o obj/file_ops.o obj/table_generator.o
+p2-dogServer: obj/p2-dogServer.o obj/shared_fn.o obj/table_ops.o obj/file_ops.o obj/table_generator.o
 	$(CC) $^ -o $@
 
 #table_generator: obj/table_generator.o obj/shared_fn.o obj/table_ops.o obj/file_ops.o

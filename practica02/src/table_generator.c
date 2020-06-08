@@ -22,11 +22,11 @@ void generate_random_table(table_t *p_table) {
     generate_random_record(temp);
     k = probe_table(p_table, poly_hash(temp->name));
     if (insert_record(p_table, temp, k)) {
-      printf("%d: %s\n", k, temp->name); // For debugging
+      //printf("%d: %s\n", k, temp->name); // For debugging
       c++;
     }
   }
-  printf("%u records were inserted\n", c);
+  //printf("%u records were inserted\n", c);
 }
 
 /* generate_random_record: */

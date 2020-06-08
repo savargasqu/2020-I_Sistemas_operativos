@@ -19,33 +19,33 @@ dogType *allocate_record() {
 void send_record(int socketfd, dogType *p_dog) {
   if (send(socketfd, p_dog, sizeof(dogType), 0) < 0)
     handle_error("send");
-  printf("sent %s\n", p_dog->name);
+  //printf("sent %s\n", p_dog->name);
 }
 
 void recv_record(int socketfd, dogType *p_dog) {
   if (recv(socketfd, p_dog, sizeof(dogType), 0) < 0)
     handle_error("recv");
-  printf("received %s\n", p_dog->name);
+  //printf("received %s\n", p_dog->name);
 }
 
 void send_id(int clientfd, unsigned id) {
   if (send(clientfd, &id, sizeof(unsigned), 0) < 0)
     handle_error("send");
-  printf("sent %u\n", id);
+  //printf("sent %u\n", id);
 }
 
 unsigned recv_id(int socketfd) {
   unsigned id;
   if (recv(socketfd, &id, sizeof(unsigned), 0) < 0)
     handle_error("recv");
-  printf("received %u\n", id);
+  //printf("received %u\n", id);
   return id;
 }
 
 void send_name(int socketfd, char *name) {
   if (send(socketfd, name, sizeof(char) * 32, 0) < 0)
     handle_error("send");
-  printf("sent %s\n", name);
+  //printf("sent %s\n", name);
   free(name);
 }
 
@@ -53,7 +53,7 @@ char *recv_name(int socketfd) {
   char *name = malloc(sizeof(char) * 32);
   if (recv(socketfd, name, sizeof(char) * 32, 0) < 0)
     handle_error("recv");
-  printf("received %s\n", name);
+  //printf("received %s\n", name);
   return name;
 }
 
@@ -70,7 +70,7 @@ void send_file(int socketfd, char *file_name) {
   }
   if (fclose(fp) != 0)
     handle_error("fclose");
-  printf("File sent successfully.\n"); // For debugging
+  //printf("File sent successfully.\n"); // For debugging
 }
 
 void recv_file(int socketfd, char *file_name) {
@@ -84,7 +84,7 @@ void recv_file(int socketfd, char *file_name) {
   }
   if (fclose(fp) != 0)
     handle_error("fclose");
-  printf("File received successfully.\n"); // For debugging
+  //printf("File received successfully.\n"); // For debugging
 }
 
 /* relay_file_contents: Write the contents from inputfd to outputfd */

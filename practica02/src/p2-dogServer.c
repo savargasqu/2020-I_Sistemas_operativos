@@ -39,7 +39,7 @@ int main() {
     handle_error("listen");
   freeaddrinfo(servinfo); // all done with this structure
 
-  printf("server: waiting for connections...\n"); // For debugging
+  // printf("server: waiting for connections...\n"); // For debugging
 
   /* Main accept loop */
   int i = 0;
@@ -51,15 +51,14 @@ int main() {
       perror("accept");
       continue; // DON'T crash if a connection fails
     }
-    // For debugging
     inet_ntop(cli_addr.ss_family, get_in_addr((struct sockaddr *)&cli_addr), s,
               sizeof s);
-    printf("server: %s has connected.\n", s);
-    // so the main thread can entertain next request
-
+    //printf("server: %s has connected.\n", s); // For debugging
+    // Package thread info in a single struct
     thread_info.socketfd = clientfd;
     thread_info.table = table;
     thread_info.IP = s;
+    // Create thread
     if (pthread_create(&tid[i], NULL, srv_menu, &thread_info) != 0)
       handle_error("thread");
     // srv_menu(table, clientfd, s);
@@ -72,8 +71,7 @@ int main() {
       }
       i = 0;
     }
-
-    printf("server: %s has disconnected.\n", s); // For debugging
+    //printf("server: %s has disconnected.\n", s); // For debugging
   }                                              // end while
 
   close(clientfd);
@@ -98,7 +96,7 @@ void *srv_menu(void *args) {
   while (true) {
     if (recv(clientfd, &menu_selection, sizeof(int), 0) < 0)
       handle_error("recv");
-    printf("user input: %d\n", menu_selection); // For debugging
+    //printf("user input: %d\n", menu_selection); // For debugging
     switch (menu_selection) {
     case 1:
       op = "insert";
