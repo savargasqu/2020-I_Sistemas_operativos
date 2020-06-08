@@ -6,8 +6,9 @@ books
 # Ignore object and binary files
 *.o
 *.out
-*.dat
 */bin
+*.dat
+*/data/
 */p1-dogProgram
 */p2-dogServer
 */p2-dogClient

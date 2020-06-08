@@ -1,39 +1,42 @@
 #include "../p2.h"
 
 int main() {
-  int clientfd, r;
-  struct addrinfo hints, *res;
-
-  // Use `getaddrinfo` to build the socket
-  // (this makes it network protocol agnostic)
+  int socketfd, rv;
+  int numbytes;
+  struct addrinfo hints, *servinfo, *res;
+  /* Write hints for the getaddrinfo function */
   memset(&hints, 0, sizeof(hints)); // Fill the struct with 0s before beginning
   hints.ai_family = AF_UNSPEC;      // Let the socket use either IPv4 or IPv6
   hints.ai_socktype = SOCK_STREAM;  // Stream socket (TCP)
-  hints.ai_flags = AI_PASSIVE;      // Fill in the IP automatically
+  if (getaddrinfo(NULL, PORT, &hints, &servinfo) != 0)
+    handle_error("server.getaddrinfo");
 
-  getaddrinfo(NULL, PORT, &hints, &res);
-
-  // Create a new socket for the client will use
-  clientfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
-  if (clientfd < 0)
+  // Create a new socket
+  socketfd =
+      socket(servinfo->ai_family, servinfo->ai_socktype, servinfo->ai_protocol);
+  if (socketfd < 0)
     handle_error("socket");
-
-  if (connect(clientfd, res->ai_addr, res->ai_addrlen) < 0) {
+  // Connect to the server
+  if (connect(socketfd, servinfo->ai_addr, servinfo->ai_addrlen) < 0) {
     handle_error("connect");
   } else {
-    printf("Connected to server...\n"); // todo: Print server IP?
+    printf("Connected to server...\n");
   }
-  // Go to main menu
-  cli_menu(clientfd);
+  if (servinfo == NULL) {
+    fprintf(stderr, "Falla de conexión\n");
+  }
 
-  if (close(clientfd) != 0)
+  cli_menu(socketfd);
+
+  if (close(socketfd) != 0)
     handle_error("close");
+  return 0;
 }
 
 /**** CLIENT SIDE ****/
 
 void cli_menu(int clientfd) {
-  int id, menu_selection = -1;
+  int menu_option = -1;
   char wait;
   while (true) {
     system("clear");
@@ -41,10 +44,16 @@ void cli_menu(int clientfd) {
            "3. Borrar registro\n4. Buscar registro\n5. Salir\n"
            "Ingrese el número de una opción: ");
     // Read user input
-    scanf("%d", &menu_selection);
+    scanf("%d", &menu_option);
     // Tell the server what kind of operation is going to be performed
-    send(clientfd, &menu_selection, sizeof(int), 0);
-    switch (menu_selection) {
+    if (0 < menu_option && menu_option <= 5) {
+      if (send(clientfd, &menu_option, sizeof(int), 0) < 0)
+        handle_error("client.send");
+    } else {
+      printf(INPUT_WARNING);
+      continue;
+    }
+    switch (menu_option) {
     case 1: // Ingresar registro
       cli_insert(clientfd);
       break;
@@ -59,44 +68,50 @@ void cli_menu(int clientfd) {
       break;
     case 5: // Salir
       return;
-    default:
-      printf(INPUT_WARNING);
-      break;
-    }
-    cli_confirm_op(clientfd);
+    } // end switch
     printf("Presione cualquier tecla para continuar.\n");
     scanf(" %c", &wait);
-  }
+  } // end while
 }
 
 void cli_insert(int socketfd) {
+  int id;
   dogType *temp = allocate_record();
   ask_new_record(temp);
   send_record(socketfd, temp);
+  id = recv_id(socketfd);
+  if (id != NUM_RECORDS + 1) {
+    printf("Registro creado con con ID %d\n", id);
+  } else {
+    printf("Registro no fue creado exitosamente\n");
+  }
   free(temp);
 }
 
 void cli_view(int socketfd) {
   int table_size, id;
-  bool ok = false;
+  bool found, ok = false; // If user wants to open file
   dogType *temp = allocate_record();
+  // Send id
   table_size = recv_id(socketfd); // We can use recv_id to get table_size
   id = ask_id(table_size);
   send_id(socketfd, id);
-  recv_record(socketfd, temp);
+  // Check if found
+  if (recv(socketfd, &found, sizeof(bool), 0) < 0)
+    handle_error("server.send");
+  if (!found) {
+    printf("No se encontró ningún registro\n");
+    return;
+  }
   // If a record was found
-  if (temp != NULL) {
-    print_record(temp, id);
-    ok = ask_open_hist();
-    // Let the server know whether the file will be opened or not
-    send(socketfd, &ok, sizeof(bool), 0);
-    if (ok) {
-      open_medical_hist(socketfd, id);
-    }
-  } else {
-    send(socketfd, &ok, sizeof(bool), 0);
-    printf("No se encontró ningún registro");
-  } // end if
+  recv_record(socketfd, temp);
+  print_record(temp, id);
+  // Let the server know whether the file will be opened or not
+  ok = ask_open_hist();
+  send(socketfd, &ok, sizeof(bool), 0);
+  if (ok) {
+    open_medical_hist(socketfd, id);
+  }
   free(temp);
 }
 
@@ -113,26 +128,19 @@ void cli_delete(int socketfd) {
 void cli_search(int socketfd) {
   int id;
   dogType *temp = allocate_record();
-  send_name(socketfd); // Ask the user for a name and send it to the server.
-  while (true) {       // Print until there aren't any more records being send
-    recv_record(socketfd, temp);
+  char *name = ask_name();
+  send_name(socketfd,
+            name); // Ask user for a namea, and send it to the server
+  while (true) {   // Print until there aren't any more records being send
     recv_id(socketfd);
-    if (temp == NULL) {
+    if (id == NUM_RECORDS + 1) {
       break;
     } else {
+      recv_record(socketfd, temp);
       print_record(temp, id);
     } // end if
   }   // end while
 }
-
-//void cli_confirm_op(int socketfd) {
-//  bool ok;
-//  if (recv(socketfd, &ok, sizeof(bool), 0) < 0)
-//    handle_error("client.recv");
-//  if (!ok) {
-//    printf("Operation failed!");
-//  }
-//}
 
 /**** AUXILIARY AND I/O FUNCTIONS ****/
 
@@ -156,25 +164,27 @@ bool ask_open_hist(int socketfd, unsigned id) {
 /* display_medical_hist: Request a file and open it in a text editor
  * aux to view_record */
 void open_medical_hist(int socketfd, unsigned id) {
-  int confirm = 1; // Confirm editor was closed and file can be sent back
-  // Temporary text file the user edits locally before sending it to the server
-  char file_name[16];
-  sprintf(file_name, "temp/%u.txt", id);
-  FILE *temp_file;
+  bool confirm = true; // Confirm editor was closed and file can be sent back
+  // text file the user edits locally before sending it to the server
+  FILE *fp;
+  char *file_name = (char *)malloc(sizeof(char) * 9);
+  file_name = "temp.txt"; // Name of file doesn't matter for client
   // Try to open file
-  if ((temp_file = fopen(file_name, "w+")) == NULL)
+  if ((fp = fopen(file_name, "w+")) == NULL)
     handle_error("fopen");
   // Get data from socket: socket => buffer => file
-  relay_file_contents(socketfd, fileno(temp_file));
+  recv_file(socketfd, file_name);
+  // relay_file_contents(socketfd, fileno(fp));
   // Open file in text editor
-  system(sprintf("nano %s", id));
-  // After file is edited, send signal to server to resume communications
-  if (send(socketfd, &confirm, sizeof(int), 0) < 0)
+  system("nano ./temp.txt");
+  // Send confirmation to server to resume communications
+  if (send(socketfd, &confirm, sizeof(bool), 0) < 0)
     handle_error("client.send");
   // Write updated data back to socket: file => buffer => socket
-  relay_file_contents(fileno(temp_file), socketfd);
+  send_file(socketfd, file_name);
+  // relay_file_contents(fileno(fp), socketfd);
   // Close file
-  if (fclose(temp_file) != 0)
+  if (fclose(fp) != 0)
     handle_error("fclose");
 }
 
@@ -199,7 +209,7 @@ char *ask_name() {
   while (1) { // Name cannot be empty
     printf("Escriba el nombre a buscar: ");
     scanf("%s", name);
-    str_lower_case(name);
+    str_upper_case(name);
     if (strcmp(name, "") == 0) {
       printf(INPUT_WARNING);
     } else {

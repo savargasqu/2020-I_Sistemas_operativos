@@ -3,142 +3,173 @@
 #define NUM_THREADS 32
 
 int main() {
-  // Hash table file
-  table_t *table = open_table_file(); // Initialize table
-  generate_random_table(table);       // Fill table
-
-  // Thread "pool"
-  pthread_t thread[NUM_THREADS]; // Array of threads
-  int i = 0;
-
-  struct sockaddr_storage client;
+  /* Initialize table */
+  table_t *table = open_table_file(false);
+  generate_random_table(table); // For debugging
+  /* Declare thread "pool" */
+  pthread_t tid[NUM_THREADS];
+  thr_info_t thread_info; // Struct passed to thread
+  /* Declare socket file descriptors and helper structs */
+  int serverfd, clientfd;           // Listen on serverfd for clientfd
+  struct addrinfo hints, *servinfo; // To create socket automatically
+  struct sockaddr_storage cli_addr; // connector's address information
   socklen_t addr_size;
-  struct addrinfo hints, *res;
-  int yes = 1;               // For setsockopt() SO_REUSEADDR, below.
-  int serverfd, clientfd, r; // File descriptors
-  char s[INET6_ADDRSTRLEN];
-  // Use `getaddrinfo` to build the socket
-  // (this makes it network protocol agnostic)
+  int yes = 1;              // For setsockopt()
+  char s[INET6_ADDRSTRLEN]; // For debugging
+  /* Write hints for the getaddrinfo function */
   memset(&hints, 0, sizeof(hints)); // Fill the struct with 0s before beginning
   hints.ai_family = AF_UNSPEC;      // Let the socket use either IPv4 or IPv6
   hints.ai_socktype = SOCK_STREAM;  // Stream socket (TCP)
   hints.ai_flags = AI_PASSIVE;      // Fill in the IP automatically
-  getaddrinfo(NULL, PORT, &hints, &res);
-  // Create a new socket for the client will use
-  serverfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+  if (getaddrinfo(NULL, PORT, &hints, &servinfo) != 0)
+    handle_error("server.getaddrinfo");
+  /* Set up server socket */
+  // Reuse port.
+  setsockopt(serverfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int));
+  // Create a new socket for the server
+  serverfd =
+      socket(servinfo->ai_family, servinfo->ai_socktype, servinfo->ai_protocol);
   if (serverfd < 0)
     handle_error("socket");
-  // Associate a socket with a port.
-  if (bind(serverfd, res->ai_addr, res->ai_addrlen) < 0)
+  // Associate the socket with a port.
+  if (bind(serverfd, servinfo->ai_addr, servinfo->ai_addrlen) < 0)
     handle_error("bind");
   // Listen for incoming connections, queue them.
   if (listen(serverfd, BACKLOG) < 0)
     handle_error("listen");
-  // Reuse port.
-  setsockopt(serverfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int));
+  freeaddrinfo(servinfo); // all done with this structure
 
-  printf("server: waiting for connections...\n");
+  printf("server: waiting for connections...\n"); // For debugging
 
-  while (1) {                   // Main accept() loop.
-    addr_size = sizeof(client); // Set size to client
-
+  /* Main accept loop */
+  int i = 0;
+  while (true) {
+    addr_size = sizeof(clientfd); // Set size to client
     // Get pending connection, returns new socket descriptor.
-    clientfd = accept(serverfd, (struct sockaddr *)&client, &addr_size);
-    if (clientfd < 0)
-      handle_error("accept");
-
-    inet_ntop(client.ss_family, (struct sockaddr *)&client, s, sizeof(s));
+    clientfd = accept(serverfd, (struct sockaddr *)&cli_addr, &addr_size);
+    if (clientfd < 0) {
+      perror("accept");
+      continue; // DON'T crash if a connection fails
+    }
+    // For debugging
+    inet_ntop(cli_addr.ss_family, get_in_addr((struct sockaddr *)&cli_addr), s,
+              sizeof s);
     printf("server: %s has connected.\n", s);
+    // so the main thread can entertain next request
 
-    srv_menu(table, clientfd); // TODO: table
+    thread_info.socketfd = clientfd;
+    thread_info.table = table;
+    thread_info.IP = s;
+    if (pthread_create(&tid[i], NULL, srv_menu, &thread_info) != 0)
+      handle_error("thread");
+    // srv_menu(table, clientfd, s);
+    //        if( i >= 50)
 
-    printf("server: %s has disconnected.\n", s);
-    close(clientfd);
-  } // end while
+    if (i >= NUM_THREADS) {
+      i = 0;
+      while (i < NUM_THREADS) {
+        pthread_join(tid[i++], NULL);
+      }
+      i = 0;
+    }
 
+    printf("server: %s has disconnected.\n", s); // For debugging
+  }                                              // end while
+
+  close(clientfd);
+  close_table_file(table);
   return 0;
 }
 
 /**** MODULE: SERVER SIDE NETWORK FUNCTIONS ****/
 
-void srv_menu(table_t *ht, int clientfd) {
-  char menu_selection = '0';
-  int id, r;
+// void srv_menu(table_t *ht, int clientfd, char *IP) {
+void *srv_menu(void *args) {
+  thr_info_t *t_info = (thr_info_t *)args;
+  table_t *ht = t_info->table;
+  int clientfd = t_info->socketfd;
+  char *IP = t_info->IP;
+
   dogType *temp = allocate_record();
-  char *name;
-  while (1) {
+  FILE *log = open_log();
+  unsigned id;
+  char *name, *op;
+  int menu_selection = -1;
+  while (true) {
     if (recv(clientfd, &menu_selection, sizeof(int), 0) < 0)
       handle_error("recv");
-    printf("user input: %c\n", menu_selection); // For debugging
-
-    // TODO: Check success
+    printf("user input: %d\n", menu_selection); // For debugging
     switch (menu_selection) {
     case 1:
-      srv_insert(ht, clientfd);
+      op = "insert";
+      recv_record(clientfd, temp);
+      id = probe_table(ht, poly_hash(temp->name));
+      srv_insert(clientfd, ht, temp, id);
       break;
-    case 2:                   // Ver registro
-      srv_view(ht, clientfd); // Wait for text file request
+    case 2:
+      op = "view";
+      send_id(clientfd, ht->size); // Send table size
+      id = recv_id(clientfd);
+      srv_view(clientfd, ht, id);
       break;
-    case 3: // Borrar registro
-      srv_delete(ht, clientfd);
+    case 3:
+      op = "delete";
+      send_id(clientfd, ht->size); // send table size
+      id = recv_id(clientfd);
+      srv_delete(clientfd, ht, id);
       break;
     case 4: // Buscar registro
-      srv_search(ht, clientfd);
+      op = "search";
+      name = recv_name(clientfd);
+      srv_search(clientfd, ht, name);
       break;
     case 5: // Salir
-      return;
-    default:
-      printf(INPUT_WARNING);
-      break;
+      close_log(log);
+      free(temp);
+      return NULL;
     } // end switch
-  }   // end while
-}
-
-bool srv_insert(table_t *ht, int socketfd) {
-  unsigned id;
-  bool success;
-  dogType *temp = allocate_record();
-  // Get record from client and put it in the table
-  recv_record(socketfd, temp);
-  id = probe_table(ht, poly_hash(temp->name));
-  success = insert_record(ht, temp, id);
+    write_to_log(log, op, name, id, IP);
+  } // end while
+  close_log(log);
   free(temp);
-  return success; // Insert is't possible
+  return NULL;
 }
 
-bool srv_view(table_t *ht, int socketfd) {
-  unsigned id;
-  bool ok, found;
-  dogType *temp = allocate_record();
-  send_id(socketfd, ht->size); // Send table size
-  id = recv_id(socketfd);
-  if (!view_record(ht, temp, id)) {
-    found = false;
-    send_record(socketfd, NULL);
+void srv_insert(int socketfd, table_t *ht, dogType *temp, unsigned id) {
+  if (insert_record(ht, temp, id)) {
+    send_id(socketfd, id);
   } else {
-    send_record(socketfd, temp);
+    send_id(socketfd, NUM_RECORDS + 1);
   }
+}
+
+void srv_view(int socketfd, table_t *ht, unsigned id) {
+  dogType *temp = allocate_record();
+  bool ok, found = false;
+  // Check if record exists
+  found = view_record(ht, temp, id);
+  if (send(socketfd, &found, sizeof(bool), 0) < 0)
+    handle_error("server.send");
+  if (!found) {
+    return;
+  }
+  send_record(socketfd, temp);
   // Wait for confirmation to send medical history
   recv(socketfd, &ok, sizeof(bool), 0);
   if (ok) {
     send_medical_hist(socketfd, id);
   }
   free(temp);
-  return found;
 }
 
-void srv_delete(table_t *ht, int socketfd) {
-  unsigned id;
+void srv_delete(int socketfd, table_t *ht, unsigned id) {
   dogType *temp = allocate_record();
-  send_id(socketfd, ht->size); // send table size
-  id = recv_id(socketfd);
   delete_record(ht, temp, id);
   free(temp);
 }
 
-void srv_search(table_t *table, int socketfd) {
+void srv_search(int socketfd, table_t *table, char *name) {
   dogType *temp = allocate_record();
-  char *name = recv_name(socketfd);
   unsigned pos = poly_hash(name);
   unsigned limit = NUM_RECORDS;
   lookup_in_table(table, pos);
@@ -146,124 +177,46 @@ void srv_search(table_t *table, int socketfd) {
     read_from_table(table, temp);
     if (strcmp(temp->name, name) == 0) {
       // If a match is found, send it through the socket
-      send_record(socketfd, temp);
       send_id(socketfd, i);
-    } else if ((strcmp(temp->name, "") == 0) && (temp->deleted == false)) {
-      // If a field that has never been initialized is found, stop the search
-      send_record(socketfd, NULL);
-      break;
+      send_record(socketfd, temp);
+    } else if (strcmp(temp->name, "") == 0) {
+      // uninitialized record was found, stop the search
+      send_id(socketfd, NUM_RECORDS + 1);
+      free(temp);
+      return;
     }
     if (i == NUM_RECORDS - 1) {
       i = 0;
+      lookup_in_table(table, 0);
       limit = pos;
     }
   }
   free(temp);
 }
-
-//void srv_confirm_op(int socketfd) {
-//  bool ok;
-//  if (send(socketfd, &ok, sizeof(bool), 0) < 0)
-//    handle_error("server.send");
-//}
-
-/**** SERVER SIDE AUXILIARY FUNCTIONS ****/
 
 /* send_medical_hist: Send the file contents corresponding to the ID
  * aux to srv_view */
 void send_medical_hist(int socketfd, unsigned id) {
-  char *buff = (char *)malloc(sizeof(char) * 512);
-  int confirm;
+  bool confirm;
   // Retrive text file
-  char file_name[16];
-  sprintf(file_name, "%u.txt", id);
-  FILE *temp_file;
+  FILE *fp;
+  char *file_name = (char *)malloc(sizeof(char) * 24);
+  sprintf(file_name, "data/%u.txt", id);
   // Try to open file
-  if ((temp_file = fopen(file_name, "w+")) == NULL)
+  if ((fp = fopen(file_name, "w+")) == NULL)
     handle_error("fopen");
   // Send data to socket: file => buffer => socket
-  relay_file_contents(fileno(temp_file), socketfd);
+  send_file(socketfd, file_name);
+  // relay_file_contents(fileno(fp), socketfd);
   // Wait for confirmation
-  if (recv(socketfd, &confirm, sizeof(int), 0) < 0) {
+  if (recv(socketfd, &confirm, sizeof(bool), 0) < 0)
     handle_error("server.recv");
-  } else if (confirm == 1) {
+  if (confirm) {
     // Write updated data back to file: socket => buffer => file
-    relay_file_contents(socketfd, fileno(temp_file));
+    recv_file(socketfd, file_name);
+    // relay_file_contents(socketfd, fileno(fp));
   }
   // Close file
-  if (fclose(temp_file) != 0)
+  if (fclose(fp) != 0)
     handle_error("fclose");
-  free(buff);
 }
-
-/* poly_hash: Polynomial hash function for strings */
-unsigned poly_hash(char *s) {
-  static const unsigned x = 31;
-  unsigned int hash_value = 0;
-  for (int i = 0; s[i] != '\0'; i++) {
-    hash_value = hash_value * x + (s[i] - 'a' + 1); // % p
-  }
-  return hash_value % NUM_RECORDS; // Hash can't exceed the size of the table
-}
-
-/* insert_record: inserts new_record to table. Returns true on success */
-bool insert_record(table_t *table, dogType *new_record, unsigned pos) {
-  if (0 >= pos && pos <= NUM_RECORDS) {
-    lookup_in_table(table, pos); // Set table pointer to the right position
-    write_to_table(table, new_record); // Write record to table
-    table->size += 1;
-    return true; // If operation was successful
-  }
-  return false; // Insert failed
-}
-
-/* view_record: */
-bool view_record(table_t *table, dogType *temp, unsigned id) {
-  lookup_in_table(table, id);
-  read_from_table(table, temp);
-  if (strcmp(temp->name, "") == 0) {
-    return false;
-  } else {
-    return true;
-  }
-}
-
-/* probe_table: Search for an empty slot in the table
- * auxiliary to insert_record */
-unsigned probe_table(table_t *table, unsigned pos) {
-  unsigned limit = NUM_RECORDS;
-  dogType *temp = allocate_record();
-  lookup_in_table(table, pos);
-  for (unsigned i = pos; i < limit; i++) {
-    read_from_table(table, temp);
-    if (strcmp(temp->name, "") == 0) {
-      // if there's an empty slot, return that position
-      free(temp);
-      return i;
-    }
-    if (i == NUM_RECORDS - 1) {
-      i = 0;
-      limit = pos;
-    }
-  } // end for
-  free(temp);
-  return NUM_RECORDS +
-         1; // No spot was found/The table is full and needs resizing
-}
-
-/* delete_record: */
-void delete_record(table_t *table, dogType *temp, unsigned id) {
-  lookup_in_table(table, id);
-  // Writing a null struct is equivalent to deleting it before a resize
-  strcpy(temp->name, "");
-  strcpy(temp->species, "");
-  strcpy(temp->breed, "");
-  temp->age = 0;
-  temp->height = 0;
-  temp->weight = 0;
-  temp->sex = '\0';
-  temp->deleted = true;
-  write_to_table(table, temp);
-  table->size -= 1;
-}
-

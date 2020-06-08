@@ -3,23 +3,32 @@
 /* File-level functions i.e. wrappers for file system calls */
 
 /* open_table_file: Wrapper around malloc(table_t) and fopen */
-table_t *open_table_file() {
-  table_t *new_table = (table_t *)malloc(sizeof(table_t));
-
-  if (new_table == NULL)
+table_t *open_table_file(bool new) {
+  table_t *new_ht = (table_t *)malloc(sizeof(table_t));
+  if (new_ht == NULL)
     handle_error("malloc");
-
-  if ((new_table->fptr = fopen(DATA_FILE, "wb+")) == NULL)
+  // Open file
+  if ((new_ht->fptr = fopen(DATA_FILE, "wb+")) == NULL)
     handle_error("fopen");
-
   // Initialize table values
-  new_table->size = 0;
-  new_table->capacity = NUM_RECORDS;
-  return new_table;
+  // if (!new) { // Recover size of table
+  //  rewind(new_ht->fptr);
+  //  if (fread(&new_ht->size, sizeof(unsigned), 1, new_ht->fptr) < 0)
+  //    handle_error("read");
+  //}
+  new_ht->size = GENERATED_RECORDS;
+  new_ht->capacity = NUM_RECORDS;
+  // printf("Table opens with %u records\n", new_ht->size); // For debugging
+  return new_ht;
 }
 
 /* close_table_file: Wrapper around free() and fclose */
 void close_table_file(table_t *table) {
+  printf("table closes with %u records\n", table->size);
+  //// Save the size of the table
+  // rewind(table->fptr);
+  // if (fwrite(&table->size, sizeof(unsigned), 1, table->fptr) < 0)
+  //  handle_error("write");
   if (fclose(table->fptr) != 0)
     handle_error("fclose");
 
@@ -27,57 +36,59 @@ void close_table_file(table_t *table) {
 }
 
 /* lookup_in_table: Wrapper around fseek */
-void lookup_in_table(table_t *table_ptr, unsigned position) {
-  if (fseek(table_ptr->fptr, position * sizeof(dogType), SEEK_SET) != 0)
+void lookup_in_table(table_t *p_table, unsigned pos) {
+  // if (fseek(p_table->fptr, (pos * sizeof(dogType)) + sizeof(unsigned),
+  // SEEK_SET) != 0) {
+  if (fseek(p_table->fptr, pos * sizeof(dogType), SEEK_SET) != 0) {
     handle_error("seek");
+  }
 }
 
 /* read_from_table: Wrapper around fread */
-void read_from_table(table_t *table_ptr, dogType *record_ptr) {
-  if (fread(record_ptr, sizeof(dogType), 1, table_ptr->fptr) < 0)
+void read_from_table(table_t *p_table, dogType *p_record) {
+  if (fread(p_record, sizeof(dogType), 1, p_table->fptr) < 0)
     handle_error("read");
 }
 
 /* write_to_table: Wrapper around fwrite */
-void write_to_table(table_t *table_ptr, dogType *record_ptr) {
-  if (fwrite(record_ptr, sizeof(dogType), 1, table_ptr->fptr) <= 0)
+void write_to_table(table_t *p_table, dogType *p_record) {
+  if (fwrite(p_record, sizeof(dogType), 1, p_table->fptr) <= 0)
     handle_error("write");
 }
 
-/* Log operations */
-
+/* LOG OPERATIONS */
 FILE *open_log() {
-  FILE *log_ptr;
-  if ((log_ptr = fopen(LOG_FILE, "a")) == NULL)
+  FILE *p_log;
+  if ((p_log = fopen(LOG_FILE, "a")) == NULL) // Open in append mode
     handle_error("read");
-  return log_ptr;
+  return p_log;
 }
 
-void close_log(FILE *log_ptr) {
-  if (fclose(log_ptr) != 0)
+void close_log(FILE *p_log) {
+  if (fclose(p_log) != 0)
     handle_error("close");
 }
 
 // [TIME] [IP] [OPERATION] [ID/NAME]
-void write_to_log(FILE *log_ptr, char *operation, char *name, unsigned id,
-                  unsigned IP) {
+void write_to_log(FILE *p_log, char *op, char *name, unsigned id, char *IP) {
   time_t timestamp;
   struct tm *time_struct;
-  char time_buf[18];
-  char log_entry[80];
-
-  // Format time
-  time(&timestamp);                    // Place epoch time in timestamp
-  time_struct = localtime(&timestamp); // Turn epoch time in human-readable time
-  strftime(time_buf, 18, "[%Y%m%dT%H%M%S] ", time_struct); // [YYYYMMDDTHHMMSS]
-
+  char time_buf[24];
+  char *log_entry = (char *)malloc(sizeof(char) * 160);
+  /* Format time */
+  // Place epoch time in timestamp
+  time(&timestamp);
+  // Turn epoch time in human-readable time
+  time_struct = localtime(&timestamp);
+  // [YYYYMMDDTHHMMSS]
+  strftime(time_buf, 24, "%Y%m%dT%H%M%S", time_struct);
   // Format the rest
-  if (strcmp(name, "") == 0) {
-    sprintf(log_entry, "[%s] [%u] [%s] [%u]", time_buf, IP, operation, id);
+  if (strcmp(op, "search") == 0) {
+    sprintf(log_entry, "[%s] [%s] [%s] [%s]\n", time_buf, IP, op, name);
   } else {
-    sprintf(log_entry, "[%s] [%u] [%s] [%s]", time_buf, IP, operation, name);
+    sprintf(log_entry, "[%s] [%s] [%s] [%u]\n", time_buf, IP, op, id);
   }
-
-  if (fwrite(log_entry, sizeof(char) * 80, 1, log_ptr) <= 0)
+  printf("LOG: %s", log_entry); // For debugging
+  if (fputs(log_entry, p_log) <= 0)
     handle_error("write");
 }

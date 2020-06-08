@@ -3,16 +3,17 @@ CC=clang
 CFLAGS=-I.
 DEPS=p2.h
 
-make: p2-dogClient p2-dogServer table_generator
+make: p2-dogClient p2-dogServer #table_generator
 
-p2-dogClient: obj/p2-dogClient.o obj/shared_fn.o
+client: obj/p2-dogClient.o obj/shared_fn.o
 	$(CC) $^ -o $@
 
-p2-dogServer: obj/p2-dogServer.o obj/shared_fn.o obj/table_ops.o obj/file_ops.o
+server: obj/p2-dogServer.o obj/shared_fn.o obj/table_ops.o obj/file_ops.o obj/table_generator.o
 	$(CC) $^ -o $@
 
-table_generator: obj/table_generator.o obj/shared_fn.o obj/table_ops.o obj/file_ops.o
-	$(CC) $^ -o $@
+# TODO: Restore table_generator executable
+#table_generator: obj/table_generator.o obj/shared_fn.o obj/table_ops.o obj/file_ops.o
+#	$(CC) $^ -o $@
 
 obj/p2-dogClient.o: src/p2-dogClient.c
 	$(CC) -c -o $@ $< $(CFLAGS)
@@ -33,4 +34,12 @@ obj/file_ops.o: src/file_ops.c
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 clean:
+	# Clean objects
 	rm obj/*.o
+	# Clean Executables
+	rm p2-DogClient
+	rm p2-DogServer
+	#rm table_generator
+
+clean_data:
+	rm data/*
