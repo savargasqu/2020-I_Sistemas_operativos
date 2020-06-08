@@ -23,11 +23,29 @@ practica02/
   |
   |-src/
   |  |
+  |  |-file_ops.c        // Manejo de archivos (data y log)
+  |  |
+  |  |-table_ops.c       // Tabla hash de _open addressing_
+  |  |
+  |  |-table_generator.c // Registros aleatoreos
+  |  |
+  |  |-p2-dogClient.c    // interfaz de usuario
+  |  |
+  |  |-p2-dogServer.c    // Manejo de sockets e hilos
+  |  |
+  |  |-shared_fn.c       // Funciones comunes entre cliente y servidor (ej. send_id)
   |
   |- Makefile
+  |
+  |- p2.h // Header de todo el proyecto
   |
 ```
 
 ### Uso
 
+Para compilar los dos ejecutables: `$ make`
+
+Para eliminar los ejecutables y archivos objeto: `$ make clean`
+
+Para eliminar los datos, historias medicas y el log: `$ make clean_data`
 

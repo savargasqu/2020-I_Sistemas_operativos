@@ -1,5 +1,5 @@
 CC=clang
-#CC=gcc # Para GNU/LINUX
+#CC=gcc
 CFLAGS=-I.
 DEPS=p2.h
 
@@ -11,7 +11,6 @@ client: obj/p2-dogClient.o obj/shared_fn.o
 server: obj/p2-dogServer.o obj/shared_fn.o obj/table_ops.o obj/file_ops.o obj/table_generator.o
 	$(CC) $^ -o $@
 
-# TODO: Restore table_generator executable
 #table_generator: obj/table_generator.o obj/shared_fn.o obj/table_ops.o obj/file_ops.o
 #	$(CC) $^ -o $@
 
