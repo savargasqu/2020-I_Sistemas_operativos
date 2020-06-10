@@ -126,17 +126,17 @@ void cli_delete(int socketfd) {
 }
 
 void cli_search(int socketfd) {
-  int id;
+  unsigned id;
   dogType *temp = allocate_record();
   char *name = ask_name();
   send_name(socketfd,
             name); // Ask user for a namea, and send it to the server
   while (true) {   // Print until there aren't any more records being send
-    recv_id(socketfd);
-    if (id == NUM_RECORDS + 1) {
+    id = recv_id(socketfd);
+    recv_record(socketfd, temp);
+    if (id >= NUM_RECORDS) {
       break;
     } else {
-      recv_record(socketfd, temp);
       print_record(temp, id);
     } // end if
   }   // end while

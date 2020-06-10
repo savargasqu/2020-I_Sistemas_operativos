@@ -5,7 +5,6 @@
 int main() {
   /* Initialize table */
   table_t *table = open_table_file(false);
-  generate_random_table(table); // For debugging
   /* Declare thread "pool" */
   pthread_t tid[NUM_THREADS];
   thr_info_t thread_info; // Struct passed to thread
@@ -177,7 +176,7 @@ void srv_search(int socketfd, table_t *table, char *name) {
       // If a match is found, send it through the socket
       send_id(socketfd, i);
       send_record(socketfd, temp);
-    } else if (strcmp(temp->name, "") == 0) {
+    } else if ((strcmp(temp->name, "") == 0) && (temp->deleted == false)) {
       // uninitialized record was found, stop the search
       send_id(socketfd, NUM_RECORDS + 1);
       free(temp);

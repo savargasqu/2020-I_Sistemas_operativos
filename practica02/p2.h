@@ -24,9 +24,9 @@
 #define LOG_FILE "data/serverDogs.log"
 // TODO: Use big numbers
 // Total capacity of table (big prime number. load factor of 0.8)
-#define NUM_RECORDS 12500227
+#define NUM_RECORDS 1800221
 // Initial size of table
-#define GENERATED_RECORDS 10000000
+#define GENERATED_RECORDS 1000000
 
 // FOR CLIENT
 #define INPUT_WARNING "Ingrese un opción válida\n"

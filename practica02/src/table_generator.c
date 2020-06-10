@@ -1,19 +1,19 @@
 #include "../p2.h"
 
-//int main() {
-//  // Hash table file
-//  table_t *table = open_table_file(true); // Initialize table
-//  generate_random_table(table);           // Fill table
-//  close_table_file(table);
-//  return 0;
-//}
+int main() {
+  // Hash table file
+  table_t *table = open_table_file(true); // Initialize table
+  generate_random_table(table);           // Fill table
+  close_table_file(table);
+  return 0;
+}
 
 /* generate_random_table: Takes a table and fills it with random records */
 void generate_random_table(table_t *p_table) {
   srand(time(NULL)); // For randomization. It should only be called once
   dogType *temp = (dogType *)malloc(sizeof(dogType));
   unsigned i, k, c = 0;
-  //lookup_in_table(p_table, 0);
+  lookup_in_table(p_table, 0);
   //for (i = 0; i < NUM_RECORDS; i++) { // Wipe previous table
   //  delete_record(p_table, temp, i);
   //}
