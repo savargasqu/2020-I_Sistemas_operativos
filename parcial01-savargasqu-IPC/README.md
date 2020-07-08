@@ -1,13 +1,9 @@
+**Sergio Alejandro Vargas Q.\
+Sistemas Operativos 2016707-1\
+2020-I\
+Universidad Nacional de Colombia**
+
 # Medición de tiempos para diferentes IPC
-
-Sistemas Operativos (Grupo 1) 2020-I
-
-Universidad Nacional de Colombia
-
-Sergio Alejandro Vargas savargasqu@unal.edu.co
-
-2020-05-20
-
 
 Hacer una comparación de los diferentes métodos de comunicación entre procesos (IPC)
 y graficar los resultados.
@@ -25,8 +21,7 @@ y graficar los resultados.
 - ` 10 MB`
 - `100 MB`
 
+## Referencias
 
-# Referencias
-
-Silberschatz, Galvin, Gagne. (2018) _Operating system concepts_ (10^a Ed.) § 3 Processes
+- Silberschatz, Galvin, Gagne. (2018) _Operating system concepts_ (10^a Ed.) § 3 Processes
 

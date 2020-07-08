@@ -1,9 +1,3 @@
-# Práctica 1
-
-**Sistemas Operativos (Grupo 1) 2020-I**
-
-**Universidad Nacional de Colombia**
-
 Juan Pablo Gutiérrez
 `jgutierrezre@unal.edu.co`
 
@@ -13,10 +7,14 @@ Tatiana Roberto Torres
 Sergio Alejandro Vargas
 `savargasqu@unal.edu.co`
 
+**Sistemas Operativos 2016707-1\
+2020-I\
+Universidad Nacional de Colombia**
+
+# Práctica 1
 
 Implementación de:
 [os-20201/practica1.pdf](https://github.com/capedrazab/os-20201/blob/master/practica1.pdf)
-
 
 ### Estructura del código:
 

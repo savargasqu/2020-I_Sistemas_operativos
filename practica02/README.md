@@ -1,22 +1,20 @@
-# Práctica 2
-
 Juan Pablo Gutiérrez
 `jgutierrezre@unal.edu.co`
 
 Sergio Alejandro Vargas
 `savargasqu@unal.edu.co`
 
-**Sistemas Operativos
-2016707-1\
+**Sistemas Operativos 2016707-1\
 2020-I\
 Universidad Nacional de Colombia**
 
+# Práctica 2
 
 Implementación de:
 [os-20201/practica2.pdf](https://github.com/capedrazab/os-20201/blob/master/practica2.pdf)
 
 
-### Estructura del código:
+## Estructura del código
 
 ```
 practica02/
@@ -41,11 +39,9 @@ practica02/
   |
 ```
 
-### Uso
+## Uso
 
-Para compilar los dos ejecutables: `$ make`
-
-Para eliminar los ejecutables y archivos objeto: `$ make clean`
-
-Para eliminar los datos, historias medicas y el log: `$ make clean_data`
+- Para compilar los dos ejecutables: `$ make`
+- Para eliminar los ejecutables y archivos objeto: `$ make clean`
+- Para eliminar los datos, historias medicas y el log: `$ make clean_data`
 
