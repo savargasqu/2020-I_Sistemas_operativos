@@ -23,13 +23,11 @@ practica01/
   |
   |-src/
   |  |
-  |  |- hash_table.c: Implementación de la tabla hash
+  |  |- file_operations.c: Llamadas al sistema, con sus respectivo manejo de errores
   |  |
-  |  |- p1-dogProgram.c: Main, Menú y demás funciones que interactuan con el usuario
+  |  |- p1-dogProgram.c: Main, Menú y funciones que interactuan con el usuario
   |  |
-  |  |- serializer.c: Manejo de archivo binario
-  |  |
-  |  |- struct_generator.c: Generador de estructuras aleatoreas
+  |  |- table_generator.c: Generador de tablas aleatoreas.
   |
   |- Makefile
   |
@@ -37,12 +35,6 @@ practica01/
 ```
 
 ### Uso
-
-Para generar un nuevo archivo binario:
-```
-$ make struct_generator
-$ ./struct_generator
-```
 
 Para compilar el código y usar la interfaz de texto con un archivo binario ya creado:
 ```

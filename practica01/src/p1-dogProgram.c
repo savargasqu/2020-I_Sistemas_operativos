@@ -1,41 +1,59 @@
-#include "../p1-dogProgram.h" // For ccls. Make handles dependencies
+#include "../p1-dogProgram.h"
+
+/*** OPEN ADDRESSING HASH TABLE FILE ***/
 
 int main() {
-  Table ht = load_table();
-  display_menu(ht);
-  save_table(ht);
+  table_t *table = open_table_file(); // Initialize table
+  generate_random_table(table);       // Fill table
+  dogType *temp = allocate_record();
+
+  // Put file pointer back at the beginning of the file
+  rewind(table->fptr);
+  // Read all the records written to the file
+  for (int i = 0; i < NUM_RECORDS; i++) {
+    read_from_table(table, temp);
+    print_record(temp, i);
+  }
+  display_menu(table, temp);
+  free(temp);
   return 0;
 }
 
-int display_menu(Table ht) {
+int display_menu(table_t *ht, dogType *temp) {
   int menu_selection = -1;
   char wait;
-
-  while (1) {
+  unsigned id;
+  char *name;
+  while (true) {
     system("clear"); // "cls" for windows
     printf("Veterinaria:\n1. Ingresar registro\n2. Ver registro\n"
            "3. Borrar registro\n4. Buscar registro\n5. Salir\n"
            "Ingrese el número de una opción: ");
     scanf("%d", &menu_selection);
-
     switch (menu_selection) {
     case 1: // Ingresar registro
-      create_record(ht);
+      ask_new_record(temp);
+      id = probe_table(ht, poly_hash(name));
+      insert_record(ht, temp, id);
       break;
     case 2: // Ver registro
-      view_record(ht);
+      id = ask_id(ht);
+      view_record(ht, temp, id);
       break;
     case 3: // Borrar registro
-      delete_record(ht);
+      id = ask_id(ht);
+      delete_record(ht, temp, id);
       break;
     case 4: // Buscar registro
-      search_record_by_name(ht);
+      name = ask_name();
+      search_record_name(ht, name, poly_hash(name));
       break;
     case 5: // Salir
       return 0;
       break;
     default:
-      printf(INPUT_WARNING);
+      // printf(INPUT_WARNING);
+      printf("bad option");
       break;
     }
     printf("Presione cualquier tecla para continuar.\n");
@@ -43,70 +61,57 @@ int display_menu(Table ht) {
   }
 }
 
-void create_record(Table ht) {
-  struct dogType *dog_ptr = (struct dogType *)malloc(sizeof(struct dogType));
-  if (dog_ptr == NULL) {
-    perror(MEMORY_ERROR);
+/* poly_hash: Polynomial hash function for strings */
+unsigned poly_hash(char *s) {
+  static const unsigned x = 31;
+  unsigned int hash_value = 0;
+  for (int i = 0; s[i] != '\0'; i++) {
+    hash_value = hash_value * x + (s[i] - 'a' + 1); // % p
   }
-  request_data(dog_ptr); // Write the necessary information in the structure
-  unsigned long id = insert_to_table(ht, dog_ptr->name, *dog_ptr);
-  if (id > 0) {
-    printf("Nuevo registro: %lu\n", id);
-  } else {
-    printf("No se pudo crear un nuevo registro\n");
-  }
+  return hash_value % NUM_RECORDS; // Hash can't exceed the size of the table
 }
 
-void view_record(Table ht) {
-  int view_selection;
-  Node node = search_by_id(ht);
-  if (node != NULL) {
-    while (1) {
-      printf("Registro %lu\n1. Ver datos\n2. Ver historia clínica\n",
-             node->dog.ID);
-      scanf("%d", &view_selection);
-      if (view_selection == 1) {
-        display_dog_data(&(node->dog)); // Argument is dogType
-        break;
-      } else if (view_selection == 2) {
-        display_clinical_history(node->dog.ID); // Argument is ID
-        break;
-      } else {
-        printf(INPUT_WARNING);
-      }
+/**** INSERT ****/
+
+/* insert_record: inserts new_record to table */
+int insert_record(table_t *table, dogType *new_record, unsigned position) {
+  if (position >= 0) {
+    lookup_in_table(table, position); // Set table pointer to the right position
+    write_to_table(table, new_record); // Write record to table
+    table->size += 1;
+    return 0; // If operation was successful
+  }
+  return -1; // Insert failed
+}
+
+/* probe_table: Search for an empty slot in the table */
+unsigned probe_table(table_t *table, unsigned start_pos) {
+  unsigned limit = NUM_RECORDS;
+  dogType *temp = allocate_record();
+  lookup_in_table(table, start_pos);
+  for (unsigned i = start_pos; i < limit; i++) {
+    read_from_table(table, temp);
+    if (strcmp(temp->name, "") == 0) {
+      // if there's an empty slot, return that position
+      free(temp);
+      return i;
+    }
+    if (i == NUM_RECORDS - 1) {
+      i = 0;
+      limit = start_pos;
     }
   }
+  free(temp);
+  return -1; // No spot was found/The table is full and needs resizing
 }
 
-void delete_record(Table ht) {
-  Node temp = search_by_id(ht);
-  if (temp != NULL) {
-    unsigned long id = temp->dog.ID;
-    delete_in_table(ht, temp);
-    printf("Se ha eliminado el registro %lu\n", id);
-    return;
-  }
-  return;
-}
-
-void search_record_by_name(Table ht) {
-  char search_name[32];
-  printf("Escriba el nombre a buscar: ");
-  scanf("%s", search_name);
-  string_lower_case(search_name);
-  unsigned int count = search_keys_in_table(ht, search_name);
-  printf("Se encontraron %u registros\n", count);
-}
-
-/* AUXILIARY FUNCTIONS */
-
-void request_data(struct dogType *dog_record) {
+/* ask_new_record: Reads fields from stdin and assigns them to the new_record */
+void ask_new_record(dogType *dog_record) {
   fflush(stdin);
   printf("Por favor ingrese los datos solicitados.\n");
   printf("Nombre: ");
-  char *temp;
   scanf("%s", dog_record->name);
-  string_lower_case(dog_record->name);
+  str_lower_case(dog_record->name);
   printf("Tipo: ");
   scanf("%s", dog_record->species);
   printf("Edad (en años): ");
@@ -121,7 +126,43 @@ void request_data(struct dogType *dog_record) {
   scanf(" %c", &dog_record->sex);
 }
 
-void display_dog_data(struct dogType *dog_ptr) {
+/**** VIEW ****/
+
+/* view_record: */
+void view_record(table_t *table, dogType *temp, unsigned id) {
+  char selection = '0';
+  lookup_in_table(table, id);
+  read_from_table(table, temp);
+  if (strcmp(temp->name, "") == 0) {
+    printf("No hay registro con este ID\n");
+  } else {
+    print_record(temp, id);
+    printf("Ver historia clínica?[y/n]\n");
+    scanf("%c", &selection);
+    if (selection == 'y') {
+      open_clinical_history(id); // Argument is ID
+    }
+  }
+}
+
+void open_clinical_history(unsigned id) {
+  char *file_name;
+  FILE *text_file;
+  sprintf(file_name, "%u.txt", id);  // File name is dog's ID
+  text_file = fopen(file_name, "w"); // Write file in binary format
+  if (text_file == NULL) {           // If pointer is NULL, fopen failed
+    perror(ERR_OPEN);
+    exit(-1);
+  } else {
+    char command[64];
+    sprintf(command, "open %s", file_name);
+    system(command);
+  }
+}
+
+/* print_record: */
+void print_record(dogType *dog_ptr, unsigned id) {
+  printf("record %u\n", id);
   printf("Nombre: %s\n", dog_ptr->name);
   printf("  Tipo: %s\n", dog_ptr->species);
   printf("  Edad: %i\n", dog_ptr->age);
@@ -131,37 +172,71 @@ void display_dog_data(struct dogType *dog_ptr) {
   printf("  Sexo: %c\n", dog_ptr->sex);
 }
 
-void display_clinical_history(unsigned long ID) {
-  char *file_name;
-  FILE *text_file;
-  sprintf(file_name, "%lu.txt", ID); // File name is dog's ID
-  text_file = fopen(file_name, "w"); // Write file in binary format
-  if (text_file == NULL) {           // If pointer is NULL, fopen failed
-    perror(OPEN_ERROR);
-    exit(-1);
-  } else {
-    char command[64];
-    sprintf(command, "open %s", file_name);
-    system(command);
-  }
+/**** DELETE ****/
+
+/* delete_record: */
+void delete_record(table_t *table, dogType *temp, unsigned id) {
+  lookup_in_table(table, id);
+  // Writing a null struct is equivalent to deleting it
+  strcpy(temp->name, "");
+  strcpy(temp->species, "");
+  strcpy(temp->breed, "");
+  temp->age = 0;
+  temp->height = 0;
+  temp->weight = 0;
+  temp->sex = '\0';
+  temp->deleted = true;
+  write_to_table(table, temp);
+  table->size -= 1;
 }
 
-Node search_by_id(Table ht) {
-  unsigned long id; // ID of dogType record
-  printf("La tabla tiene %lu registros\n", ht->size);
-  printf("Ingrese el ID de un registro: ");
-  scanf("%lu", &id);
-  if (id >= 0) {
-    Node node = search_value_in_table(ht, id);
-    if (node != NULL) {
-      return node;
+/**** SEARCH ****/
+
+/* search_record_name: Search all records with a matching name */
+void search_record_name(table_t *table, char *name, unsigned start_pos) {
+  unsigned limit = NUM_RECORDS;
+  dogType *temp = allocate_record();
+  lookup_in_table(table, start_pos);
+  for (unsigned i = start_pos; i < limit; i++) {
+    read_from_table(table, temp);
+    if (strcmp(temp->name, name) == 0) {
+      // If a match is found, print it
+      print_record(temp, i);
+    } else if ((strcmp(temp->name, "") == 0) && (temp->deleted == false)) {
+      // If a field that has never been initialized is found, stop the search
+      break;
+    }
+    if (i == NUM_RECORDS - 1) {
+      i = 0;
+      limit = start_pos;
     }
   }
-  printf("El registro %lu no existe\n", id);
-  return NULL;
+  free(temp);
 }
 
-void string_lower_case(char *str) {
+char *ask_name() {
+  char *name = malloc(sizeof(char) * 32);
+  while (strcmp(name, "") == 0) { // Name cannot be empty
+    printf("Escriba el nombre a buscar: ");
+    scanf("%s", name);
+    str_lower_case(name);
+  }
+  return name;
+}
+
+/**** AUXILIARY FUNCTIONS ****/
+
+/* ask_id: Prints the size of the table and reads an integer from stdin */
+unsigned ask_id(table_t *table) {
+  // TODO check id is valid
+  unsigned id; // ID of record
+  printf("La tabla tiene %u registros\n", table->size);
+  printf("Ingrese el ID de un registro: ");
+  scanf("%u", &id);
+  return id;
+}
+
+void str_lower_case(char *str) {
   for (int i = 0; str[i]; i++) {
     str[i] = tolower(str[i]);
   }

@@ -1,33 +1,21 @@
-#include <ctype.h>
+#include <ctype.h> // for tolower(char)
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <time.h>
+#include <string.h> // For strcpy, strlen
+#include <time.h>   // For randomization
 
-// Define error macros in spanish
-#define OPEN_ERROR "ERROR: Archivo no se pudo abrir con éxito"
-#define SERIALIZE_ERROR "ERROR: Archivo no se pudo leer/escribir con éxito"
-#define CLOSE_ERROR "ERROR: Archivo no se pudo cerrar con éxito"
-#define MEMORY_ERROR "ERROR: Falla en la alocación de memoria"
-#define INPUT_WARNING "Ingrese un opción correcta\n"
+#define ERR_OPEN   "ERROR en fopen. El archivo no se pudo abrir con éxito"
+#define ERR_SEEK   "ERROR en fseek. El flujo del archivo no se ajustó con éxito"
+#define ERR_READ   "ERROR en fread. El archivo no se pudo leer con éxito"
+#define ERR_WRITE  "ERROR en fwrite. El archivo no se pudo escribir con éxito"
+#define ERR_CLOSE  "ERROR en fclose. Archivo no se pudo cerrar con éxito"
+#define ERR_MEMORY "ERROR en malloc. Falla en la alocación de memoria"
 
-// Name of binary file
-#define DATA_FILE "dataDogs.dat"
+#define FILE_NAME "people.dat"
+#define NUM_RECORDS 10
 
-// Hash table cardinality. Should be a prime number!
-#define HASHSIZE 10111
-
-// Structures with their corresponding pointer type
-struct node;
-typedef struct node *Node;
-struct list;
-typedef struct list *List;
-struct table;
-typedef struct table *Table;
-struct dogType;
-// typedef struct dogType Dog;
-
-struct dogType {
+typedef struct {
   char name[32];    // nombre
   char species[32]; // tipo
   int age;          // edad (años)
@@ -35,125 +23,49 @@ struct dogType {
   int height;       // estatura (cm)
   float weight;     // peso (Kg)
   char sex;         // sexo (H/M)
-  unsigned long ID; // ID of dogType. 4 bytes for hash. 4 bytes for unique ID
-};
+  bool deleted;     // If a record is deleted, but the table hasn't been resized
+} dogType;
 
-struct node {
-  Node prev; // Pointer to the previous node. First node points to NULL
-  Node next; // Pointer to the following node. Last node points to NULL
-  char *key; // Name of dogType. Key for hash function
-  struct dogType dog;
-};
+typedef struct {
+  FILE *fptr;        // File pointer
+  unsigned size;     // Current number of records stored
+  unsigned capacity; // Number of records that _can_ be stored
+} table_t;
 
-struct table {
-  unsigned long size;  // Number of NODES (NOT BUCKETS) in the table
-  unsigned long count; // Number to generate IDs. It never decreases.
-  Node buckets[HASHSIZE];
-};
+/**** MODULE: FILE OPERATIONS ****/
+dogType *allocate_record();
+table_t *open_table_file();
+void close_table_file(table_t *table);
+void read_from_table(table_t *table_ptr, dogType *record_ptr);
+void write_to_table(table_t *table_ptr, dogType *record_ptr);
+void lookup_in_table(table_t *table_ptr, unsigned position);
 
-/* main: Loads table and calls display_menu, once the user sessions ends,
- * it saves the modified table. */
-int main();
+/**** MODULE: MENU OPERATIONS ****/
+int display_menu(table_t *, dogType *);
 
+unsigned poly_hash(char *s);
 
-/******** MENU / USER INTERACTING FUNCTIONS ********/
+int insert_record(table_t *table, dogType *record, unsigned);
+unsigned probe_table(table_t *, unsigned start_pos); // aux to insert
+void ask_new_record(dogType *new_record);           // aux to insert
 
-/* display_menu: Runs loop showing the operations a user can do */
-int display_menu(Table);
+void view_record(table_t *table, dogType *temp, unsigned);
+void print_record(dogType *record_ptr, unsigned id); // aux to view
+void open_clinical_history(unsigned id);
 
-/* create_record: Creates a dogType struct and calls insert_to_table */
-void create_record(Table);
+void delete_record(table_t *table, dogType *temp, unsigned);
 
-/* view_record: it either calls display_dog_data or write_clinical_history */
-void view_record(Table);
+void search_record_name(table_t *table, char *name, unsigned);
+char *ask_name(); // aux to search_record
 
-/* delete_record:  Calls hash table delete function to remove a dog's record */
-void delete_record(Table);
+unsigned ask_id(table_t *table); // aux to delete and view
+void str_lower_case(char *str);  // aux to insert and ask_name/search
 
-/* search_record_by_name: Calls a table search to retrieve a dogType's data */
-void search_record_by_name(Table);
+/**** MODULE: RANDOMIZATION ****/
+void generate_random_table(table_t *table_ptr);
+int generate_random_int(int min, int max);
+char *generate_random_string(int str_len);
+void generate_random_record(dogType *record);
 
-/******** MENU / AUXILIARY FUNCTIONS ********/
-
-/* request_data: takes a dogType reference and writes the data input from user.
- * Is an auxiliary function to create_record */
-void request_data(struct dogType *);
-
-/* display_dog_data: Print to stdout the information of the requested dog.
- * Is an auxiliary function to view_record. */
-void display_dog_data(struct dogType *);
-
-/* display_clinical_history: Opens the dog's clinical history in a text file.
- * Is an auxiliary function to view_record. */
-void display_clinical_history(unsigned long);
-
-/* search_with_id:  Prints the number of dog records stored in the table,
- * And requests an ID from the user, it then searches for a node with said ID,
- * and returns the node. If no node is found, it returns NULL */
-Node search_by_id(Table);
-
-/* string_lower_case: Takes a string and converts it to lower case.
- * The string is overwritten, not copied. */
-void string_lower_case(char *);
-
-
-/******** HASH TABLE IMPLEMENTATION ********
- * NOTE: `value' is the same as the dog ID. One is just a more general name. */
-
-/* create_table: Allocate memory for a hash table. Initialize buckets as NULL */
-Table create_table();
-
-/* poly_hash: Calculates the polynomial hash of string S
- * h(S) := \sum_{i = 0}^{|S| - 1} S[i]*31^i \mod |H| */
-unsigned int poly_hash(char *);
-
-/* insert_to_table: Creates a node (k, v) and places it in the h(k)-th bucket
- * Returns the value v of the new node */
-int insert_to_table(Table, char *, struct dogType);
-
-/* search_value_in_table: Search a node with a given value. Values are unique.
- * If a node is found, return a pointer to the node, otherwise return NULL */
-Node search_value_in_table(Table, unsigned long);
-
-/* search_keys_in_table: Takes a key and prints all nodes with that key,
- * return the number of nodes found */
-unsigned int search_keys_in_table(Table, char *);
-
-/* delete_in_table: Searches for a node. If it finds a match, it removes its
- * reference from the table and frees its memory */
-void delete_in_table(Table, Node);
-
-
-/******** SERIALIZATION ********/
-
-/* save_table: Takes as argument a hash table, then it opens a binary file
- * and writes all the dogType records of the table in the file */
-void save_table(Table);
-
-/* load_table: Reads the records stored in a binary file,
- * inserts them in a new hash table and returns said table. */
-Table load_table();
-
-
-/******** RANDOM DOG RECORD GENERATOR ********/
-
-/* generate_table: Returns a hash table filled with generated dogType structs */
-Table generate_table();
-
-/* Generates a dogType struct with random attributes */
-struct dogType generate_dog();
-
-/* generate_random_int: Returns a random integer in range [min, max) */
-int generate_random_int(int, int);
-
-/* generate_random_float: Returns a random floating point number
- * in range [0, max) */
-float generate_random_float(float);
-
-/* generate_random_string: Takes an integer x as argument and
- * returns a random string of length x */
-char *generate_random_string(int);
-
-/* generate_random_gender: Returns either 'H' or 'M' with 50% probability */
 char generate_random_gender();
-
+float generate_random_float(float max);

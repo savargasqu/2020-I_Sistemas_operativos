@@ -1,27 +1,23 @@
 #include "../p1-dogProgram.h"
 
-#define NUMBER_OF_STRUCTS 10000000
+/* Randomization module. Functions that generate different random data types */
 
-int main() {
-  Table ht = generate_table();
-  save_table(ht);
-  return 0;
-}
-
-Table generate_table() {
-  srand(time(NULL));   // Initialization, should only be called once.
-  Table ht = create_table();
-
-  for (unsigned long i = 0; i < NUMBER_OF_STRUCTS; i++) {
-    struct dogType dog = generate_dog();
-    unsigned long id = insert_to_table(ht, dog.name, dog);
-    printf("%lu: %s\n", id, dog.name);
+/* generate_random_table: Takes a table and fills it with random records */
+void generate_random_table(table_t *table_ptr) {
+  srand(time(NULL)); // For randomization. It should only be called once
+  unsigned k;
+  dogType *temp = (dogType *)malloc(sizeof(dogType));
+  for (int i = 0; i < NUM_RECORDS; i++) {
+    generate_random_record(temp);
+    k = probe_table(table_ptr, poly_hash(temp->name));
+    insert_record(table_ptr, temp, k);
+    printf("%d: %s\n", k, temp->name); // For debugging
   }
-  return ht;
 }
 
-struct dogType generate_dog() {
-  struct dogType *dog_ptr = (struct dogType *)malloc(sizeof(struct dogType));
+
+/* generate_random_record: */
+void generate_random_record(dogType *dog_ptr) {
   strcpy(dog_ptr->name, generate_random_string(32));
   strcpy(dog_ptr->species, generate_random_string(32));
   strcpy(dog_ptr->breed, generate_random_string(16));
@@ -29,19 +25,14 @@ struct dogType generate_dog() {
   dog_ptr->height = generate_random_int(1, 100);
   dog_ptr->weight = generate_random_float(100);
   dog_ptr->sex = generate_random_gender();
-  dog_ptr->ID = 0; // Hash table will give the dog a proper ID
-
-  return *dog_ptr;
 }
 
+/* generate_random_int: */
 int generate_random_int(int min, int max) {
   return (rand() % (max - min + 1)) + min; // range [min, max]
 }
 
-float generate_random_float(float max) {
-  return ((float)rand() / (float)(RAND_MAX)) * max;
-}
-
+/* generate_random_string: */
 char *generate_random_string(int str_len) {
   char *rstr = malloc((str_len) * sizeof(char));
   int name_len = generate_random_int(1, str_len - 2);
@@ -53,10 +44,13 @@ char *generate_random_string(int str_len) {
   return rstr;
 }
 
+float generate_random_float(float max) {
+  return ((float)rand() / (float)(RAND_MAX)) * max;
+}
+
 char generate_random_gender() {
   if (generate_random_int(0, 2) == 0) { // Either 0 or 1
     return 'H';
   }
   return 'M';
 }
-
